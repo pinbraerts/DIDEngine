@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<game>
+  <objects>
+    <object id="@+id/dima" name="Dima">
+      <properties>
+        <property id="@+id/dimas_health" name="Health" value="100">
+          
+        </property>
+      </properties>
+    </object>
+  </objects>
+</game>
