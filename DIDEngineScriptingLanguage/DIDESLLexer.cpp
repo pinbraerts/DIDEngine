@@ -2,25 +2,26 @@
 #define DEBUGGING
 #include "../DEBUG.h"
 
+#define THROW_ERROR(TYPE, INFO) do { throw Error(script.tellg(), TYPE, dir, INFO); } while (false)
 #define CASE(VALUE, OPER, ENTER) case VALUE: currentLexem = Token::##OPER; goto entered##ENTER;
 #define CASE_OPERATOR_ENVIRONMENT(ENTER) \
 CASE(L',', OPERATOR_ENVIRONMENT, ENTER)\
 case L'.': {\
 	if (getCharacter() == L'.')\
-		if (getCharacter()) {\
+		if (getCharacter() == L'.') {\
 			getCharacter();\
 			return Token(currentLexem = Token::OPERATOR_ENVIRONMENT, L"...");\
 		}\
-		else throw Error();\
+		else THROW_ERROR(Error::UNEXPECTED_LITERAL, Token::OPERATOR_ENVIRONMENT);\
 	else return Token(currentLexem = Token::OPERATOR_ENVIRONMENT, L".");\
-}
+} // TODO: add float and check %some_integer_literal%..%some_method%()
 #define CASE_ANNOTATION case L'@': return getAnnotation();
 #define CASE_ENTERED(ENTER) \
 default: break;\
 entered##ENTER: return Token(currentLexem, getCharacterPost());
 #define CASE_ARITHMETIC_SET case L'+': case L'-': case L'*': case L'/': {\
 	DIDESLC_t lst = getCharacterPost();\
-	if (!scriptStream.eof() && currentCharacter == L'=') {\
+	if (!script.eof() && currentCharacter == L'=') {\
 		getCharacter();\
 		return Token(currentLexem = Token::OPERATOR_SET, (DIDESLS_t)L"" + lst + L'=');\
 	}\
@@ -49,23 +50,24 @@ case L'^': case L'~': {\
 
 DIDESL::Lexer::Lexer() : currentLexem(Token::START) {}
 
-DIDESL::Lexer::Lexer(DIDESLS_t Script) : currentLexem(DIDESL::Token::START), scriptStream(Script) {
+DIDESL::Lexer::Lexer(DIDESLS_t Script) : currentLexem(DIDESL::Token::START), script(Script), dir(L"Hardcore") {
 	getCharacter();
 }
 
 void DIDESL::Lexer::setFile(DIDESLS_t Path) {
 	std::wifstream file(Path);
 	std::wostringstream wos;
-	scriptStream.clear();
+	script.clear();
 	DIDESLS_t str;
 	while (std::getline(file, str)) wos << str << L'\n';
-	scriptStream.str(wos.str());
+	script.str(wos.str());
+	dir = Path;
 	getCharacter();
 }
 
 DIDESL::DIDESLS_t DIDESL::Lexer::getWord() {
 	DIDESLS_t str = L"";
-	while (!scriptStream.eof() && (iswalpha(currentCharacter) || currentCharacter == L'_')) str += getCharacterPost();
+	while (!script.eof() && (iswalpha(currentCharacter) || currentCharacter == L'_')) str += getCharacterPost();
 	return str;
 }
 
@@ -82,7 +84,7 @@ bool DIDESL::Lexer::isType(DIDESLS_t str) {
 
 bool DIDESL::Lexer::isReservedOperatorWord(DIDESLS_t str) {
 	return str == L"if" || str == L"while" || str == L"return" ||
-		str == L"throw Error()" || str == L"else"; // TODO: add words
+		str == L"break" || str == L"else"; // TODO: add words
 }
 
 bool DIDESL::Lexer::isBoolLiteral(DIDESLS_t str) {
@@ -94,12 +96,12 @@ DIDESL::Token DIDESL::Lexer::getAnnotation() { // TODO: turn to operations with 
 	ignoreSpaces();
 	DIDESLS_t str = getWord();
 	if (str.size()) return Token(currentLexem = Token::ANNOTATION, str);
-	else throw Error();
+	else THROW_ERROR(Error::EMPTY_LITERAL, currentLexem);
 }
 
 DIDESL::DIDESLC_t DIDESL::Lexer::getCharacter()
 {
-	return currentCharacter = scriptStream.get();
+	return currentCharacter = script.get();
 }
 
 DIDESL::DIDESLC_t DIDESL::Lexer::getCharacterPost()
@@ -110,10 +112,10 @@ DIDESL::DIDESLC_t DIDESL::Lexer::getCharacterPost()
 }
 
 bool DIDESL::Lexer::ignoreSpaces(bool isEnd) {
-	while (!scriptStream.eof() && isspace(currentCharacter)) getCharacter();
-	if (scriptStream.eof())
+	while (!script.eof() && isspace(currentCharacter)) getCharacter();
+	if (script.eof())
 		if (isEnd) return true;
-		else throw Error();
+		else THROW_ERROR(Error::UNEXPECTED_EOF, currentLexem);
 	else return false;
 }
 
@@ -122,10 +124,10 @@ DIDESL::Token DIDESL::Lexer::getLiteral(bool isResF, bool isTypeR, bool errInEnd
 	if (currentCharacter == L'"' || currentCharacter == L'\'') {
 		DIDESLC_t div = currentCharacter;
 		getCharacter();
-		while (!scriptStream.eof() && currentCharacter != div) {
+		while (!script.eof() && currentCharacter != div) {
 			if (currentCharacter == L'\\') {
 				getCharacter();
-				if (scriptStream.eof()) throw Error();
+				if (script.eof()) THROW_ERROR(Error::UNEXPECTED_EOF, Token::STRING_LITERAL);
 				switch (currentCharacter) { // TODO: add more escapes
 				case L'"': case L'\'': case L'\\': {
 					str += currentCharacter;
@@ -144,22 +146,22 @@ DIDESL::Token DIDESL::Lexer::getLiteral(bool isResF, bool isTypeR, bool errInEnd
 			}
 			str += getCharacterPost();
 		}
-		if (scriptStream.eof()) throw Error();
+		if (script.eof()) THROW_ERROR(Error::UNEXPECTED_EOF, Token::STRING_LITERAL);
 		getCharacter();
 		return Token(currentLexem = Token::STRING_LITERAL, str);
 	}
 	else if(iswdigit(currentCharacter)) {
 		DIDESLC_t fir = currentCharacter;
-		if (!scriptStream.eof() && getCharacter() == L'x') {
+		if (!script.eof() && getCharacter() == L'x') {
 			getCharacter();
-			while (!scriptStream.eof() && (currentCharacter == L'0' || currentCharacter == L'1')) str += getCharacterPost();
+			while (!script.eof() && (currentCharacter == L'0' || currentCharacter == L'1')) str += getCharacterPost();
 		}
 		else {
-			scriptStream.putback(currentCharacter);
+			script.putback(currentCharacter);
 			currentCharacter = fir;
-			while (!scriptStream.eof() && iswdigit(currentCharacter)) str += getCharacterPost();
+			while (!script.eof() && iswdigit(currentCharacter)) str += getCharacterPost();
 		}
-		if (!str.size()) throw Error();
+		if (!str.size()) THROW_ERROR(Error::EXPECTED_LITERAL, Token::NUMBER_LITERAL);
 		return Token(currentLexem = Token::NUMBER_LITERAL, str);
 	}
 	str = getWord();
@@ -167,7 +169,7 @@ DIDESL::Token DIDESL::Lexer::getLiteral(bool isResF, bool isTypeR, bool errInEnd
 	else if (isResF && isReservedFunctionWord(str)) currentLexem = Token::RES_FUNCTION;
 	else if (isTypeR && isType(str)) currentLexem = Token::TYPE;
 	else if (str.size()) currentLexem = Token::NAME;
-	else if (errInEnd) throw Error();
+	else if (errInEnd) THROW_ERROR(Error::EMPTY_LITERAL, currentLexem);
 	else return Token(Token::END, L"\n");
 	return Token(currentLexem, str);
 }
@@ -180,7 +182,7 @@ DIDESL::Token DIDESL::Lexer::next() {
 		ignoreSpaces();
 		DIDESLS_t str = getWord();
 		if (isReservedFunctionWord(str)) currentLexem = Token::RES_FUNCTION;
-		else throw Error();
+		else THROW_ERROR(Error::UNEXPECTED_LITERAL, Token::NONE);
 		return Token(currentLexem, str);
 	}
 	case Token::TYPE: {
@@ -194,7 +196,7 @@ DIDESL::Token DIDESL::Lexer::next() {
 		}
 		DIDESLS_t str = getWord();
 		if (str.size()) return Token(currentLexem = Token::NAME, str);
-		throw Error();
+		THROW_ERROR(Error::UNCLASSIFIED, currentLexem);
 	}
 	case Token::SEMICOLON: {
 		ignoreSpaces();
@@ -212,7 +214,7 @@ DIDESL::Token DIDESL::Lexer::next() {
 		if (isType(str)) currentLexem = Token::TYPE;
 		else if (isReservedOperatorWord(str)) currentLexem = Token::RES_OPERATOR;
 		else if (str.size()) currentLexem = Token::NAME;
-		else throw Error();
+		else THROW_ERROR(Error::EMPTY_LITERAL, currentLexem);
 		return Token(currentLexem, str);
 	}
 	case Token::NAME: case Token::CSBRACE: {
@@ -232,7 +234,7 @@ DIDESL::Token DIDESL::Lexer::next() {
 		CASE(L';', SEMICOLON, 1)
 		CASE_ENTERED(1)
 		}
-		throw Error();
+		THROW_ERROR(Error::EMPTY_LITERAL, currentLexem);
 	}
 	case Token::CBRACE: {
 		ignoreSpaces();
@@ -270,7 +272,7 @@ DIDESL::Token DIDESL::Lexer::next() {
 		CASE(L';', SEMICOLON, 3)
 		CASE_ENTERED(3)
 		}
-		throw Error();
+		THROW_ERROR(Error::EMPTY_LITERAL, currentLexem);
 	}
 	case Token::RES_FUNCTION: {
 		ignoreSpaces();
@@ -279,7 +281,7 @@ DIDESL::Token DIDESL::Lexer::next() {
 		DIDESLS_t str = getWord();
 		if (isReservedFunctionWord(str)) return Token(currentLexem = Token::RES_FUNCTION, str);
 		else if (str.size()) return Token(currentLexem = Token::NAME, str);
-		throw Error();
+		THROW_ERROR(Error::EMPTY_LITERAL, currentLexem);
 	}
 	case Token::RES_OPERATOR: {
 		ignoreSpaces();
@@ -370,7 +372,7 @@ DIDESL::Token DIDESL::Lexer::next() {
 		else if (isReservedFunctionWord(str)) currentLexem = Token::RES_FUNCTION;
 		else if (isReservedOperatorWord(str)) currentLexem = Token::RES_OPERATOR;
 		else if (str.size()) currentLexem = Token::NAME;
-		else throw Error();
+		THROW_ERROR(Error::EMPTY_LITERAL, currentLexem);
 		return Token(currentLexem, str);
 	}
 	case Token::OCBRACE: {
@@ -386,7 +388,7 @@ DIDESL::Token DIDESL::Lexer::next() {
 		if (isType(str)) currentLexem = Token::TYPE;
 		else if (isReservedOperatorWord(str)) currentLexem = Token::RES_OPERATOR;
 		else if (str.size()) currentLexem = Token::NAME;
-		else throw Error();
+		else THROW_ERROR(Error::EMPTY_LITERAL, currentLexem);
 		return Token(currentLexem, str);
 	}
 	case Token::ANNOTATION: {
@@ -403,9 +405,9 @@ DIDESL::Token DIDESL::Lexer::next() {
 		DIDESLS_t str = getWord();
 		if (isType(str)) currentLexem = Token::TYPE;
 		else if (str.size()) currentLexem = Token::NAME;
-		else throw Error();
+		else THROW_ERROR(Error::EMPTY_LITERAL, currentLexem);
 		return Token(currentLexem, str);
 	}
 	}
-	throw Error();
+	THROW_ERROR(Error::UNCLASSIFIED, Token::NONE);
 }

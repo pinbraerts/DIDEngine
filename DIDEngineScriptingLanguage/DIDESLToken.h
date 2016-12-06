@@ -39,7 +39,8 @@ struct DIDESL::Token
 
 		ANNOTATION, // @
 
-		END
+		END,
+		NONE
 	};
 
 	Lexem type;
