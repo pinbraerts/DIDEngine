@@ -57,4 +57,7 @@
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="TestScript.dides" />
+  </ItemGroup>
 </Project>
