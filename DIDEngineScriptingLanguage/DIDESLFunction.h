@@ -2,6 +2,7 @@
 #define DID_ENGINE_SCRIPTING_LANGUAGE_FUNCTION_H
 
 #include "DIDESLDefinitions.h"
+#include "DIDESLArgument.h"
 #include <vector>
 
 class DIDESL::Function {

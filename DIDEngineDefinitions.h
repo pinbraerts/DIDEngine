@@ -1,7 +1,9 @@
 #ifndef DID_ENGINE_DEFINITIONS_H
 
 #define DID_ENGINE_DEFINITIONS_H
+#ifndef DEBUGGING
 #define DEBUGGING
+#endif // !DEBUGGING
 
 #include "DEBUG.h"
 #include "DIDEngineXML/DIDEngineEnvironment.h"

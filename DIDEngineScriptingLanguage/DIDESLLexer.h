@@ -37,6 +37,29 @@ public:
 		};
 
 		Error(unsigned Start, ErrorType Typet = ErrorType::UNCLASSIFIED, DIDESLS_t Dir = L"Hardcore", Token::Lexem Info = Token::END) : start(Start), type(Typet), dir(Dir), info(Info) {};
+		DIDESLS_t toString() {
+			std::wstringstream stream;
+			if (type != UNCLASSIFIED) {
+				stream << L"Error: ";
+				switch (type) {
+				case EMPTY_LITERAL:
+					stream << L"empty literal after ";
+					break;
+				case UNEXPECTED_LITERAL:
+					stream << L"unexpected ";
+					break;
+				case EXPECTED_LITERAL:
+					stream << L"expected ";
+					break;
+				case UNEXPECTED_EOF:
+					stream << L"unexpected end of file after ";
+					break;
+				}
+			}
+			else stream << L"Unclassified error after ";
+			stream << Token::toString(info) << L" on " << start << L" position in \"" << dir << L"\"!";
+			return stream.str();
+		}
 		ErrorType type; // ErrorType and Token::Lexem
 		Token::Lexem info;
 		DIDESLS_t dir;
@@ -44,8 +67,10 @@ public:
 	};
 
 	Lexer();
-	Lexer(DIDESLS_t);
+	Lexer(DIDESLS_t, DIDESLS_t = L"Hardcore");
 	void setFile(DIDESLS_t);
+	void setString(DIDESLS_t, DIDESLS_t = L"Hardcore");
+	void setStream(std::wistringstream, DIDESLS_t = L"Hardcore");
 	Token next();
 };
 
