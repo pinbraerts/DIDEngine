@@ -10,6 +10,8 @@
 class DIDESL::Lexer
 {
 private:
+	unsigned lines;
+	unsigned posInLine;
 	std::wistringstream script;
 	DIDESLC_t currentCharacter;
 	Token::Lexem currentLexem;
@@ -36,7 +38,7 @@ public:
 			UNEXPECTED_EOF // info = after
 		};
 
-		Error(unsigned Start, ErrorType Typet = ErrorType::UNCLASSIFIED, DIDESLS_t Dir = L"Hardcore", Token::Lexem Info = Token::END) : start(Start), type(Typet), dir(Dir), info(Info) {};
+		Error(unsigned Pos, unsigned Line = 0, ErrorType Typet = ErrorType::UNCLASSIFIED, DIDESLS_t Dir = L"Hardcore", Token::Lexem Info = Token::END) : pos(Pos), line(Line), type(Typet), dir(Dir), info(Info) {};
 		DIDESLS_t toString() {
 			std::wstringstream stream;
 			if (type != UNCLASSIFIED) {
@@ -57,13 +59,14 @@ public:
 				}
 			}
 			else stream << L"Unclassified error after ";
-			stream << Token::toString(info) << L" on " << start << L" position in \"" << dir << L"\"!";
+			stream << Token::toString(info) << L" on " << pos << L" position in " << line << L" line in \"" << dir << L"\"!";
 			return stream.str();
 		}
 		ErrorType type; // ErrorType and Token::Lexem
 		Token::Lexem info;
 		DIDESLS_t dir;
-		unsigned start;
+		unsigned line;
+		unsigned pos;
 	};
 
 	Lexer();

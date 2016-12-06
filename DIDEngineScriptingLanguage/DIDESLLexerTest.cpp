@@ -15,6 +15,7 @@ void readScript(DIDESL::Lexer& lex) {
 bool test() {
 	DEBUG_SEPARATOR = L"";
 	DIDESL::Lexer lex;
+#if 1
 	lex.setString(
 		L"async function onGameStart(Object sender, ...args) {\n"
 		L"	Resources res = getResources();\n"
@@ -40,6 +41,9 @@ bool test() {
 		L"	log(sender.name + \" kick \" + target.name + \" on \" + value + \" points!\");\n"
 		L"	target.incProperty(\"Health\", -value);\n"
 		L"}");
+#else
+	lex.setFile(L"DIDEngineScriptingLanguage/TestScript.dides");
+#endif
 	try {
 		readScript(lex);
 	}

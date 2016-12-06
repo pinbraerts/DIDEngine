@@ -4,7 +4,7 @@
 #endif // !DEBUGGING
 #include "../DEBUG.h"
 
-#define THROW_ERROR(TYPE, INFO) do { throw Error(script.tellg(), TYPE, dir, INFO); } while (false)
+#define THROW_ERROR(TYPE, INFO) do { throw Error(posInLine, lines, TYPE, dir, INFO); } while (false)
 #define CASE(VALUE, OPER, ENTER) case VALUE: currentLexem = Token::##OPER; goto entered##ENTER;
 #define CASE_OPERATOR_ENVIRONMENT(ENTER) \
 CASE(L',', OPERATOR_ENVIRONMENT, ENTER)\
@@ -52,18 +52,21 @@ case L'^': case L'~': {\
 
 DIDESL::Lexer::Lexer() : currentLexem(Token::START) {}
 
-DIDESL::Lexer::Lexer(DIDESLS_t Script, DIDESLS_t Dir) : currentLexem(DIDESL::Token::START), script(Script), dir(Dir) {
+DIDESL::Lexer::Lexer(DIDESLS_t Script, DIDESLS_t Dir) : currentLexem(DIDESL::Token::START), script(Script), dir(Dir), lines(1), posInLine(0) {
 	getCharacter();
 }
 
 void DIDESL::Lexer::setFile(DIDESLS_t Path) {
 	std::wifstream file(Path);
+	if (!file) throw std::io_errc();
 	std::wostringstream wos;
 	script.clear();
 	DIDESLS_t str;
 	while (std::getline(file, str)) wos << str << L'\n';
 	script.str(wos.str());
 	dir = Path;
+	lines = 1;
+	posInLine = 0;
 	getCharacter();
 }
 
@@ -72,6 +75,8 @@ void DIDESL::Lexer::setString(DIDESLS_t Script, DIDESLS_t Dir) {
 	script.seekg(0);
 	currentLexem = Token::START;
 	dir = Dir;
+	posInLine = 0;
+	lines = 1;
 	getCharacter();
 }
 
@@ -80,6 +85,8 @@ void DIDESL::Lexer::setStream(std::wistringstream newStream, DIDESLS_t Dir) {
 	script.seekg(0);
 	currentLexem = Token::START;
 	dir = Dir;
+	lines = 1;
+	posInLine = 0;
 	getCharacter();
 }
 
@@ -119,6 +126,11 @@ DIDESL::Token DIDESL::Lexer::getAnnotation() { // TODO: turn to operations with 
 
 DIDESL::DIDESLC_t DIDESL::Lexer::getCharacter()
 {
+	if (currentCharacter == L'\n') {
+		++lines;
+		posInLine = 1;
+	}
+	else ++posInLine;
 	return currentCharacter = script.get();
 }
 
@@ -169,14 +181,12 @@ DIDESL::Token DIDESL::Lexer::getLiteral(bool isResF, bool isTypeR, bool errInEnd
 		return Token(currentLexem = Token::STRING_LITERAL, str);
 	}
 	else if(iswdigit(currentCharacter)) {
-		DIDESLC_t fir = currentCharacter;
-		if (!script.eof() && getCharacter() == L'x') {
+		if (!script.eof() && script.peek() == L'x') {
+			getCharacter();
 			getCharacter();
 			while (!script.eof() && (currentCharacter == L'0' || currentCharacter == L'1')) str += getCharacterPost();
 		}
 		else {
-			script.putback(currentCharacter);
-			currentCharacter = fir;
 			while (!script.eof() && iswdigit(currentCharacter)) str += getCharacterPost();
 		}
 		if (!str.size()) THROW_ERROR(Error::EXPECTED_LITERAL, Token::NUMBER_LITERAL);
@@ -366,7 +376,6 @@ DIDESL::Token DIDESL::Lexer::next() {
 		CASE(L'%', OPERATOR_ARITHMETIC, 7)
 		CASE(L'(', OBRACE, 7)
 		CASE(L')', CBRACE, 7)
-		CASE(L';', SEMICOLON, 7)
 		CASE_BOOL_NO_SET
 		CASE_BIT_BOOL
 		CASE_BOOL_CMP
@@ -390,7 +399,7 @@ DIDESL::Token DIDESL::Lexer::next() {
 		else if (isReservedFunctionWord(str)) currentLexem = Token::RES_FUNCTION;
 		else if (isReservedOperatorWord(str)) currentLexem = Token::RES_OPERATOR;
 		else if (str.size()) currentLexem = Token::NAME;
-		THROW_ERROR(Error::EMPTY_LITERAL, currentLexem);
+		else THROW_ERROR(Error::EMPTY_LITERAL, currentLexem);
 		return Token(currentLexem, str);
 	}
 	case Token::OCBRACE: {
