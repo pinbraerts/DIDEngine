@@ -1,5 +1,5 @@
 async function onGameStart(Object sender, ...args) {
-	Resources res = getResources();
+	Resources res = getResources(;
 	Object mPlayer = sender.getChild(res.objects.player);
 	Event mPlayerKick = mPlayer.getEvent("Kick");
 	Object mEnemy = sender.getChild(res.objects.enemy);

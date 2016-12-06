@@ -53,8 +53,8 @@
     <ClCompile Include="DIDESLFunction.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
-    <ClCompile Include="DIDESLLexerTest.cpp">
-      <Filter>Файлы исходного кода</Filter>
+    <ClCompile Include="DIDESLLexerTest.h">
+      <Filter>Заголовочные файлы</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

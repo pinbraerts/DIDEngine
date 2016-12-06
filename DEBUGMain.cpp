@@ -3,10 +3,10 @@
 #endif // !DEBUGGING
 
 #include "DEBUG.h"
-#include "DIDEngineScriptingLanguage\DIDESLLexerTest.cpp"
+#include "DIDEngineScriptingLanguage\DIDESLLexerTest.h"
 
 int main() {
-	test();
+	DEBUG_LOG("test ", test() ? L"accepted" : L"rejected");
 	while (true);
 	return 0;
 }

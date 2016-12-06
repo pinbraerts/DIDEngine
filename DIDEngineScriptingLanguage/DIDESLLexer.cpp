@@ -49,6 +49,11 @@ case L'^': case L'~': {\
 	if (getCharacter() == L'=') return Token(currentLexem = Token::OPERATOR_BOOL, L"=" + getCharacterPost());\
 	break;\
 }
+#define CASE_ARITHMETIC_NO_SET(ENTERED) CASE(L'+', OPERATOR_ARITHMETIC, 5)\
+CASE(L'-', OPERATOR_ARITHMETIC, ENTERED)\
+CASE(L'*', OPERATOR_ARITHMETIC, ENTERED)\
+CASE(L'%', OPERATOR_ARITHMETIC, ENTERED)\
+CASE(L'/', OPERATOR_ARITHMETIC, ENTERED)
 
 DIDESL::Lexer::Lexer() : currentLexem(Token::START) {}
 
@@ -58,7 +63,7 @@ DIDESL::Lexer::Lexer(DIDESLS_t Script, DIDESLS_t Dir) : currentLexem(DIDESL::Tok
 
 void DIDESL::Lexer::setFile(DIDESLS_t Path) {
 	std::wifstream file(Path);
-	if (!file) throw std::io_errc();
+	if (!file) THROW_ERROR(Error::UNEXPECTED_EOF, Token::END);
 	std::wostringstream wos;
 	script.clear();
 	DIDESLS_t str;
@@ -331,11 +336,7 @@ DIDESL::Token DIDESL::Lexer::next() {
 	case Token::OPERATOR_ARITHMETIC: case Token::OPERATOR_BIT: case Token::OSBRACE: {
 		ignoreSpaces();
 		switch (currentCharacter) {
-		CASE(L'+', OPERATOR_ARITHMETIC, 5)
-		CASE(L'-', OPERATOR_ARITHMETIC, 5)
-		CASE(L'*', OPERATOR_ARITHMETIC, 5)
-		CASE(L'%', OPERATOR_ARITHMETIC, 5)
-		CASE(L'/', OPERATOR_ARITHMETIC, 5)
+		CASE_ARITHMETIC_NO_SET(5)
 		CASE(L'(', OBRACE, 5)
 		CASE(L';', SEMICOLON, 5)
 		CASE(L'$', OPERATOR_REFERENCE, 5)
@@ -350,11 +351,7 @@ DIDESL::Token DIDESL::Lexer::next() {
 	case Token::OPERATOR_SET: case Token::OPERATOR_BOOL: {
 		ignoreSpaces();
 		switch (currentCharacter) {
-		CASE(L'+', OPERATOR_ARITHMETIC, 6)
-		CASE(L'-', OPERATOR_ARITHMETIC, 6)
-		CASE(L'*', OPERATOR_ARITHMETIC, 6)
-		CASE(L'/', OPERATOR_ARITHMETIC, 6)
-		CASE(L'%', OPERATOR_ARITHMETIC, 6)
+		CASE_ARITHMETIC_NO_SET(5)
 		CASE(L'(', OBRACE, 6)
 		CASE(L';', SEMICOLON, 6)
 		CASE(L'$', OPERATOR_REFERENCE, 6)
@@ -369,11 +366,7 @@ DIDESL::Token DIDESL::Lexer::next() {
 	case Token::OPERATOR_ENVIRONMENT: case Token::OBRACE: {
 		ignoreSpaces();
 		switch (currentCharacter) {
-		CASE(L'+', OPERATOR_ARITHMETIC, 7)
-		CASE(L'-', OPERATOR_ARITHMETIC, 7)
-		CASE(L'*', OPERATOR_ARITHMETIC, 7)
-		CASE(L'/', OPERATOR_ARITHMETIC, 7)
-		CASE(L'%', OPERATOR_ARITHMETIC, 7)
+		CASE_ARITHMETIC_NO_SET(7)
 		CASE(L'(', OBRACE, 7)
 		CASE(L')', CBRACE, 7)
 		CASE_BOOL_NO_SET
@@ -437,4 +430,34 @@ DIDESL::Token DIDESL::Lexer::next() {
 	}
 	}
 	THROW_ERROR(Error::UNCLASSIFIED, Token::NONE);
+}
+
+DIDESL::Lexer::Error::Error(unsigned Pos, unsigned Line, DIDESL::Lexer::Error::ErrorType Typet, DIDESLS_t Dir, Token::Lexem Info) : pos(Pos), line(Line), type(Typet), dir(Dir), info(Info) {};
+
+DIDESL::DIDESLS_t DIDESL::Lexer::Error::toString() {
+	std::wstringstream stream;
+	if (type != UNCLASSIFIED) {
+		stream << L"Error: ";
+		switch (type) {
+		case EMPTY_LITERAL:
+			stream << L"empty literal after ";
+			break;
+		case UNEXPECTED_LITERAL:
+			stream << L"unexpected ";
+			break;
+		case EXPECTED_LITERAL:
+			stream << L"expected ";
+			break;
+		case UNEXPECTED_EOF:
+			if (info == Token::END) {
+				stream << L"file \"" << dir << "\" can't be opened!";
+				return stream.str();
+			}
+			else stream << L"unexpected end of file after ";
+			break;
+		}
+	}
+	else stream << L"Unclassified error after ";
+	stream << Token::toString(info) << L" on " << pos << L" position in " << line << L" line in \"" << dir << L"\"!";
+	return stream.str();
 }

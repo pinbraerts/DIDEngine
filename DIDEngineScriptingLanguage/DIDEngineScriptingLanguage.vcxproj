@@ -124,7 +124,7 @@
   <ItemGroup>
     <ClCompile Include="DIDESLFunction.cpp" />
     <ClCompile Include="DIDESLLexer.cpp" />
-    <ClCompile Include="DIDESLLexerTest.cpp" />
+    <ClCompile Include="DIDESLLexerTest.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Syntax.xlsx" />

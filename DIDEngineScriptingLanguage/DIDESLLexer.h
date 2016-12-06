@@ -35,34 +35,16 @@ public:
 			EMPTY_LITERAL, // info = after
 			UNEXPECTED_LITERAL, // info = literal
 			EXPECTED_LITERAL, // info = literal
-			UNEXPECTED_EOF // info = after
+			UNEXPECTED_EOF // info = after, if info = end file insn't opened
 		};
 
-		Error(unsigned Pos, unsigned Line = 0, ErrorType Typet = ErrorType::UNCLASSIFIED, DIDESLS_t Dir = L"Hardcore", Token::Lexem Info = Token::END) : pos(Pos), line(Line), type(Typet), dir(Dir), info(Info) {};
-		DIDESLS_t toString() {
-			std::wstringstream stream;
-			if (type != UNCLASSIFIED) {
-				stream << L"Error: ";
-				switch (type) {
-				case EMPTY_LITERAL:
-					stream << L"empty literal after ";
-					break;
-				case UNEXPECTED_LITERAL:
-					stream << L"unexpected ";
-					break;
-				case EXPECTED_LITERAL:
-					stream << L"expected ";
-					break;
-				case UNEXPECTED_EOF:
-					stream << L"unexpected end of file after ";
-					break;
-				}
-			}
-			else stream << L"Unclassified error after ";
-			stream << Token::toString(info) << L" on " << pos << L" position in " << line << L" line in \"" << dir << L"\"!";
-			return stream.str();
-		}
-		ErrorType type; // ErrorType and Token::Lexem
+		Error(unsigned,
+			  unsigned = 0,
+			  ErrorType = ErrorType::UNCLASSIFIED,
+			  DIDESLS_t = L"Hardcore",
+			  Token::Lexem = Token::END);
+		DIDESLS_t toString();
+		ErrorType type;
 		Token::Lexem info;
 		DIDESLS_t dir;
 		unsigned line;
