@@ -47,9 +47,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DIDESLToken.cpp">
-      <Filter>Файлы исходного кода</Filter>
-    </ClCompile>
     <ClCompile Include="DIDESLLexer.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>

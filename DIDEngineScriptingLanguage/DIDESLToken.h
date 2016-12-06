@@ -46,8 +46,7 @@ struct DIDESL::Token
 	DIDESLS_t value;
 
 	Token(Lexem Type, DIDESLS_t Value) : type(Type), value(Value) {};
-	Token(Lexem Lex, DIDESLC_t Ch) {
-		type = Lex;
+	Token(Lexem Type, DIDESLC_t Ch) : type(Type) {
 		value = (DIDESLS_t)L"" + Ch;
 	};
 };
