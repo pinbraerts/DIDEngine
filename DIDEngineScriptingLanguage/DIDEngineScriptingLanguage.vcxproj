@@ -128,7 +128,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Syntax.xlsx" />
-    <None Include="TestScript0.dides" />
     <None Include="TestScript1.dides" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
