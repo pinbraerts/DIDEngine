@@ -7,37 +7,25 @@
 #endif // !DEBUGGING
 #include "../DEBUG.h"
 
-#define DIDESLLexerTest(NUMBER, TYPE, INFO, LINE, POS) DIDESLLexerTestFile(NUMBER, L"DIDEngineScriptingLanguage/TestScript"L##(#NUMBER)L".dides", TYPE, INFO, LINE, POS)
-
 void readScript(DIDESL::Lexer& lex) {
 	DIDESL::Token tok = lex.next();
 	while (tok.type != DIDESL::Token::END) {
-		DEBUG_LOG(DIDESL::Token::toString(tok.type), L": ", L'"', tok.value, L'"');
+		DEBUG_LOG(L'"', tok.value, L'"');
 		tok = lex.next();
 	}
 }
 
-bool DIDESLLexerTestFile(unsigned number,
-						 DIDESL::DIDESLS_t dir,
-						 int type = -1,
-						 int info = -1,
-						 unsigned line = 1,
-						 unsigned pos = 0) {
-	DEBUG_USING_SEPARATOR(L"");
-	DEBUG_USING_PREFIX((DIDESL::DIDESLS_t)L"TEST #" + std::to_wstring(number) + L": ");
+bool test() {
+	DEBUG_SEPARATOR = L"";
 	DIDESL::Lexer lex;
+	lex.setFile(L"DIDEngineScriptingLanguage/TestScript.dides");
 	try {
-		lex.setFile(dir);
 		readScript(lex);
 	}
 	catch (DIDESL::Lexer::Error e) {
 		DEBUG_LOG(e.toString());
-		DEBUG_STOP_USING_PREFIX;
-		DEBUG_STOP_USING_SEPARATOR;
-		return (type < 0 || e.type == type) && (info < 0 || e.info == info) && e.pos == pos && e.line == line && e.dir == dir;
+		return e.type == DIDESL::Lexer::Error::EMPTY_LITERAL && e.info == DIDESL::Token::OBRACE && e.pos == 31 && e.line == 2 && e.dir == L"DIDEngineScriptingLanguage/TestScript.dides";
 	}
-	DEBUG_STOP_USING_PREFIX;
-	DEBUG_STOP_USING_SEPARATOR;
 	return false;
 }
 

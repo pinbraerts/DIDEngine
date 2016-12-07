@@ -58,8 +58,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="TestScript.dides" />
     <None Include="Syntax.xlsx" />
-    <None Include="TestScript1.dides" />
-    <None Include="TestScript0.dides" />
   </ItemGroup>
 </Project>
