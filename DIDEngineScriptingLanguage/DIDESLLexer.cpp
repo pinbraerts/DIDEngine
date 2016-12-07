@@ -55,13 +55,16 @@ CASE(L'*', OPERATOR_ARITHMETIC, ENTERED)\
 CASE(L'%', OPERATOR_ARITHMETIC, ENTERED)\
 CASE(L'/', OPERATOR_ARITHMETIC, ENTERED)
 
-DIDESL::Lexer::Lexer() : currentLexem(Token::START) {}
+DIDESL::Lexer::Lexer() : currentLexem(Token::START), dir(L""), lines(1), posInLine(0) {}
 
-DIDESL::Lexer::Lexer(DIDESLS_t Script, DIDESLS_t Dir) : currentLexem(DIDESL::Token::START), script(Script), dir(Dir), lines(1), posInLine(0) {
+DIDESL::Lexer::Lexer(DIDESLS_t Script, DIDESLS_t Dir) : currentLexem(DIDESL::Token::START), dir(Dir), lines(1), posInLine(0), script(Script) {
 	getCharacter();
 }
 
 void DIDESL::Lexer::setFile(DIDESLS_t Path) {
+	dir = Path;
+	lines = 1;
+	posInLine = 0;
 	std::wifstream file(Path);
 	if (!file) THROW_ERROR(Error::UNEXPECTED_EOF, Token::END);
 	std::wostringstream wos;
@@ -69,29 +72,26 @@ void DIDESL::Lexer::setFile(DIDESLS_t Path) {
 	DIDESLS_t str;
 	while (std::getline(file, str)) wos << str << L'\n';
 	script.str(wos.str());
-	dir = Path;
-	lines = 1;
-	posInLine = 0;
 	getCharacter();
 }
 
 void DIDESL::Lexer::setString(DIDESLS_t Script, DIDESLS_t Dir) {
-	script.str(Script);
-	script.seekg(0);
-	currentLexem = Token::START;
 	dir = Dir;
 	posInLine = 0;
 	lines = 1;
+	script.str(Script);
+	script.seekg(0);
+	currentLexem = Token::START;
 	getCharacter();
 }
 
 void DIDESL::Lexer::setStream(std::wistringstream newStream, DIDESLS_t Dir) {
-	script.str(newStream.str());
-	script.seekg(0);
-	currentLexem = Token::START;
 	dir = Dir;
 	lines = 1;
 	posInLine = 0;
+	script.str(newStream.str());
+	script.seekg(0);
+	currentLexem = Token::START;
 	getCharacter();
 }
 
