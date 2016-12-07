@@ -110,6 +110,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\BLOCKS.h" />
     <ClInclude Include="..\DEBUG.h" />
     <ClInclude Include="DIDESL.h" />
     <ClInclude Include="DIDESLArgument.h" />
