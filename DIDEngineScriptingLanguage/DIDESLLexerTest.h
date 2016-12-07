@@ -7,7 +7,7 @@
 #endif // !DEBUGGING
 #include "../DEBUG.h"
 
-#define DIDESLLexerTest(NUMBER, TYPE, INFO, LINE, POS) DIDESLLexerTestFile(NUMBER, L"DIDEngineScriptingLanguage/TestScript"L##(#NUMBER)L".dides", TYPE, INFO, LINE, POS)
+#define DIDESLLexerTest(NUMBER, TYPE, INFO, LINE, POS) DIDESLLexerTestFile(NUMBER, L"DIDEngineScriptingLanguage/TestScript" L###NUMBER L".dides", TYPE, INFO, LINE, POS)
 
 void readScript(DIDESL::Lexer& lex) {
 	DIDESL::Token tok = lex.next();
@@ -22,7 +22,7 @@ bool DIDESLLexerTestFile(unsigned number,
 						 int type = -1,
 						 int info = -1,
 						 unsigned line = 1,
-						 unsigned pos = 0) { 
+						 unsigned pos = 0) {
 	DEBUG_USING_SEPARATOR(L"");
 	DEBUG_USING_PREFIX((DIDESL::DIDESLS_t)L"TEST #" + std::to_wstring(number) + L": ");
 	DIDESL::Lexer lex;
