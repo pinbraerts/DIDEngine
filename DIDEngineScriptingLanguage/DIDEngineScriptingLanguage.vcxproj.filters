@@ -51,6 +51,9 @@
     <ClInclude Include="..\BLOCKS.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
+    <ClInclude Include="..\UTILS.h">
+      <Filter>Заголовочные файлы</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DIDESLLexer.cpp">

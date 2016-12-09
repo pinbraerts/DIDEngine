@@ -112,6 +112,7 @@
   <ItemGroup>
     <ClInclude Include="..\BLOCKS.h" />
     <ClInclude Include="..\DEBUG.h" />
+    <ClInclude Include="..\UTILS.h" />
     <ClInclude Include="DIDESL.h" />
     <ClInclude Include="DIDESLArgument.h" />
     <ClInclude Include="DIDESLDefinitions.h" />
