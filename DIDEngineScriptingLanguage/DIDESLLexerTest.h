@@ -24,9 +24,7 @@ void readScript(DIDESL::Lexer& lex) {
 		START_BLOCK(WHILE_IN_LEX);
 		DEBUG_LOG(DIDESL::Token::toString(tok.type), L": ", L'"', tok.value, L'"');
 		tok = lex.next();
-		DEBUG_USING(PREFIX, L"BLOCKS: ");
 		PRINT_BLOCK_ENTERING(WHILE_IN_LEX);
-		DEBUG_STOP_USING(PREFIX);
 	}
 }
 
