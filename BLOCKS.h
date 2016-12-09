@@ -7,6 +7,20 @@
 
 #include "DEBUG.h"
 
+#ifdef BLOCKS_COUNTING // -> ifdef
 
+#define INIT_BLOCK(ID) static unsigned BLOCK_COUNTER_##ID = 0
+#define START_BLOCK(ID) ++BLOCK_COUNTER_##ID
+#define COUNT_BLOCK_ENTERING(ID) BLOCK_COUNTER_##ID
+#define COUNT_BLOCK_ENTERING_STRING(ID) std::to_wstring(COUNT_BLOCK_ENTERING(ID)) +  L" enterings to block " L###ID
+#define PRINT_BLOCK_ENTERING(ID) DEBUG_USING(PREFIX, L"BLOCK " L###ID L": "); DEBUG_LOG(COUNT_BLOCK_ENTERING_STRING(ID)); DEBUG_STOP_USING(PREFIX)
+
+#else
+
+#define INIT_BLOCK(ID)
+#define START_BLOCK(ID)
+#define COUNT_BLOCK_ENTERING(ID)
+
+#endif // BLOCKS_COUNTING
 
 #endif // !BLOCKS_H

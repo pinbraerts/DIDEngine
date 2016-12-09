@@ -7,12 +7,10 @@
 #include <iostream>
 
 int main() {
-	DEBUG_USING_SEPARATOR(L"");
+	DEBUG_USING(SEPARATOR, L"");
 	DEBUG_LOG(L"test #0 ", DIDESLLexerTestFile(0, L"TestScript0.dides", DIDESL::Lexer::Error::UNEXPECTED_EOF, DIDESL::Token::END) ? L"accepted" : L"rejected");
-	DEBUG_LOG(L"test #1 ", DIDESLLexerTest(1, DIDESL::Lexer::Error::EMPTY_LITERAL, DIDESL::Token::OBRACE, 2, 31) ? L"accepted" : L"rejected");
-	std::cout << "Press any key to quit... ";
-	std::string res;
-	std::getline(std::cin, res);
-	DEBUG_STOP_USING_SEPARATOR;
+	DIDESL_LEXER_TEST_EXECUTE_AND_PRINT(1, DIDESL::Lexer::Error::EMPTY_LITERAL, DIDESL::Token::OBRACE, 2, 31);
+	DEBUG_END_MAIN;
+	DEBUG_STOP_USING(SEPARATOR);
 	return 0;
 }
