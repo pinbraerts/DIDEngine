@@ -55,7 +55,7 @@ struct DIDESL::Token
 		case TYPE:
 			return L"type literal";
 		case SEMICOLON:
-			return L";";
+			return L"semicolon";
 		case NAME:
 			return L"identifier literal";
 		case STRING_LITERAL:

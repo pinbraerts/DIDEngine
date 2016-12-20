@@ -3,14 +3,19 @@
 #endif // !DEBUGGING
 
 #include "DEBUG.h"
-#include "DIDEngineScriptingLanguage\DIDESLLexerTest.h"
+#include "DIDEngineScriptingLanguage\DIDESLLexer.h"
 #include <iostream>
 
 int main() {
 	DEBUG_USING(SEPARATOR, L"");
-	DEBUG_LOG(L"test #0 ", DIDESLLexerTestFile(0, L"TestScript0.dides", DIDESL::Lexer::Error::UNEXPECTED_EOF, DIDESL::Token::END) ? L"accepted" : L"rejected");
-	DIDESL_LEXER_TEST_EXECUTE_AND_PRINT(1, DIDESL::Lexer::Error::EMPTY_LITERAL, DIDESL::Token::OBRACE, 2, 31);
-	DEBUG_END_MAIN;
+	DIDESL::Lexer lex;
+	lex.setFile(L"DIDEngineScriptingLanguage\\TestScript1.dides");
+	DIDESL::Token tok = lex.next();
+	while (tok.type != DIDESL::Token::END) {
+		DEBUG_LOG(DIDESL::Token::toString(tok.type), L": ", L'"', tok.value, L'"');
+		tok = lex.next();
+	}
 	DEBUG_STOP_USING(SEPARATOR);
+	DEBUG_END_MAIN;
 	return 0;
 }

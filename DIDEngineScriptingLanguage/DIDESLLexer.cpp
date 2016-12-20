@@ -47,10 +47,10 @@ unsigned DIDESL::Lexer::getLines() {
 	return lines;
 }
 
-/// <summary>Starts read word from next character</summary>
+/// <summary>Starts read word from current character</summary>
 DIDESL::DIDESLS_t DIDESL::Lexer::getWord() {
 	DIDESLS_t str = L"";
-	while (!script.eof() && (iswalpha(getCharacter()) || currentCharacter == L'_')) str += currentCharacter;
+	while (!script.eof() && (iswalpha(currentCharacter) || currentCharacter == L'_')) str += getCharacterPost();
 	return str;
 }
 
@@ -83,7 +83,7 @@ bool DIDESL::Lexer::isOctalAlpha(DIDESLC_t c) {
 }
 
 bool DIDESL::Lexer::isHexAlpha(DIDESLC_t c) {
-	return iswalpha(c) || c == L'a' || c == L'b' || c == 'c' || c == L'd' || c == L'e' || c == L'f' || c == L'A' || c == L'B' || c == 'C' || c == L'D' || c == L'E' || c == L'F';
+	return iswdigit(c) || c == L'a' || c == L'b' || c == 'c' || c == L'd' || c == L'e' || c == L'f' || c == L'A' || c == L'B' || c == 'C' || c == L'D' || c == L'E' || c == L'F';
 }
 
 /// <summary>Gets and returns next character</summary>
@@ -178,16 +178,19 @@ DIDESL::Token DIDESL::Lexer::next() {
 		getCharacter();
 		return Token(Token::STRING_LITERAL, str);
 	}
-	case L'@': return Token(Token::ANNOTATION, getWord());
+	case L'@': {
+		getCharacter();
+		return Token(Token::ANNOTATION, getWord());
+	}
 	default: {
 		DIDESLS_t str = L"";
-		if (iswalpha(currentCharacter)) {
+		if (iswdigit(currentCharacter)) {
 			if (script.eof()) return Token(Token::NUMBER_LITERAL, getCharacterPost());
 			switch (script.peek()) {
 			NUMBER_LITERAL_CASE(case L'b': getCharacter(); getCharacter();, _BINARY, isBinAlpha);
 			NUMBER_LITERAL_CASE(case L'o': getCharacter(); getCharacter();, _OCTAL, isOctalAlpha);
 			NUMBER_LITERAL_CASE(case L'x': getCharacter(); getCharacter();, _MHEX, isHexAlpha);
-			NUMBER_LITERAL_CASE(default:, , iswalpha);
+			NUMBER_LITERAL_CASE(default:, , iswdigit);
 			}
 		}
 		str = getWord();

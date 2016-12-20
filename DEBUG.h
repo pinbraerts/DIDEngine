@@ -57,7 +57,7 @@
 #define __DEBUG_STOP_USING_ID_5(ID, WHICH1, WHICH2, WHICH3, WHICH4) __DEBUG_STOP_USING_ID_4(ID, WHICH1, WHICH2, WHICH3); __DEBUG_STOP_USING_ID_2(ID, WHICH4)
 #define DEBUG_STOP_USING_ID(...) __MACRO_SELECTOR(__DEBUG_STOP_USING_ID, __VA_ARGS__)(__VA_ARGS__)
 
-#define DEBUG_END_MAIN do { std::wcout << L"Press any key to quit... "; std::wstring res; std::getline(std::wcin, res); } while(false)
+#define DEBUG_END_MAIN do { std::wcout << L"Press Enter to quit... "; std::getchar(); } while(false)
 
 static std::wstring __DEBUG_SUFFIX = __STANDART_DEBUG_SUFFIX;
 static std::wstring __DEBUG_PREFIX = __STANDART_DEBUG_PREFIX;
