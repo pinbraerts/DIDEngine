@@ -10,52 +10,32 @@
 class DIDESL::Lexer
 {
 private:
-	unsigned lines;
-	unsigned posInLine;
 	std::wistringstream script;
 	DIDESLC_t currentCharacter;
-	Token::Lexem currentLexem;
-	DIDESLS_t dir;
+	unsigned lines;
+	unsigned pos;
 
 	DIDESLS_t getWord();
 	bool isReservedFunctionWord(DIDESLS_t);
 	bool isType(DIDESLS_t);
 	bool isReservedOperatorWord(DIDESLS_t);
 	bool isBoolLiteral(DIDESLS_t);
-	Token getAnnotation();
+	bool isBinAlpha(DIDESLC_t);
+	bool isOctalAlpha(DIDESLC_t);
+	bool isHexAlpha(DIDESLC_t);
 	DIDESLC_t getCharacter();
 	DIDESLC_t getCharacterPost();
-	bool ignoreSpaces(bool = false);
-	Token getLiteral(bool = false, bool = false, bool = true);
 
 public:
-	struct Error {
-		enum ErrorType {
-			UNCLASSIFIED = 0, // info = after
-			EMPTY_LITERAL, // info = after
-			UNEXPECTED_LITERAL, // info = literal
-			EXPECTED_LITERAL, // info = literal
-			UNEXPECTED_EOF // info = after, if info = end file insn't opened
-		};
-
-		Error(unsigned,
-			  unsigned = 0,
-			  ErrorType = ErrorType::UNCLASSIFIED,
-			  DIDESLS_t = L"Hardcore",
-			  Token::Lexem = Token::END);
-		DIDESLS_t toString();
-		ErrorType type;
-		Token::Lexem info;
-		DIDESLS_t dir;
-		unsigned line;
-		unsigned pos;
-	};
+	struct EOFError {};
 
 	Lexer();
-	Lexer(DIDESLS_t, DIDESLS_t = L"Hardcore");
+	Lexer(DIDESLS_t);
 	void setFile(DIDESLS_t);
-	void setString(DIDESLS_t, DIDESLS_t = L"Hardcore");
-	void setStream(std::wistringstream, DIDESLS_t = L"Hardcore");
+	void setString(DIDESLS_t);
+	void setStream(std::wistringstream);
+	unsigned getPos();
+	unsigned getLines();
 	Token next();
 };
 

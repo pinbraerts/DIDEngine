@@ -1,6 +1,6 @@
 #ifndef DID_ENGINE_SCRIPTING_LANGUAGE_LEXER_TEST
 #define DID_ENGINE_SCRIPTING_LANGUAGE_LEXER_TEST
-
+#if 0
 #include "DIDESLLexer.h"
 
 #ifndef DEBUGGING
@@ -40,7 +40,7 @@ bool DIDESLLexerTestFile(unsigned number,
 		lex.setFile(dir);
 		readScript(lex);
 	}
-	catch (DIDESL::Lexer::Error e) {
+	catch (DIDESL::Lexer::EOFError e) {
 		DEBUG_LOG(e.toString());
 		DEBUG_STOP_USING(PREFIX, SEPARATOR);
 		return (type < 0 || e.type == type) && (info < 0 || e.info == info) && e.pos == pos && e.line == line && e.dir == dir;
@@ -48,5 +48,5 @@ bool DIDESLLexerTestFile(unsigned number,
 	DEBUG_STOP_USING(PREFIX, SEPARATOR);
 	return false;
 }
-
+#endif // 0
 #endif // !DID_ENGINE_SCRIPTING_LANGUAGE_LEXER_TEST

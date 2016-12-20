@@ -15,6 +15,9 @@ struct DIDESL::Token
 		// literals
 		STRING_LITERAL,
 		NUMBER_LITERAL,
+		NUMBER_LITERAL_BINARY,
+		NUMBER_LITERAL_OCTAL,
+		NUMBER_LITERAL_MHEX,
 		BOOL_LITERAL,
 
 		// reserved words
@@ -23,7 +26,7 @@ struct DIDESL::Token
 
 		// operators
 		OPERATOR_ARITHMETIC, // +, -, *, /, %
-		OPERATOR_SET, // =, +=, -=, *=, /=
+		OPERATOR_SET, // =, +=, -=, *=, /=, %=
 		OPERATOR_BIT, // |, &, ^, ~
 		OPERATOR_BOOL, // &&, ||, !, ==, !=, >, >=, <, <=
 		OPERATOR_ENVIRONMENT, // ..., ,, .
@@ -39,8 +42,7 @@ struct DIDESL::Token
 
 		ANNOTATION, // @
 
-		END,
-		NONE
+		END
 	};
 
 	Lexem type;
