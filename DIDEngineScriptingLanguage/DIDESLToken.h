@@ -78,6 +78,7 @@ struct DIDESL::Token
 		return L"none";
 	}
 
+	Token() {};
 	Token(Lexem Type, DIDESLS_t Value) : type(Type), value(Value) {};
 	Token(Lexem Type, DIDESLC_t Ch) : type(Type) {
 		value = (DIDESLS_t)L"" + Ch;

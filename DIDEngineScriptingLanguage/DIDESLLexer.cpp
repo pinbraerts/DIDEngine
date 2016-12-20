@@ -122,8 +122,7 @@ case X:\
 DIDESL::Token DIDESL::Lexer::next() {
 	while (!script.eof() && isspace(currentCharacter)) getCharacter();
 	if (script.eof()) return Token(Token::END, L'\n');
-	switch (currentCharacter)
-	{
+	switch (currentCharacter) {
 	SIMPLE_CASE(L'(', OBRACE);
 	SIMPLE_CASE(L')', CBRACE);
 	SIMPLE_CASE(L'{', OCBRACE);

@@ -4,14 +4,27 @@
 #include "DIDESLDefinitions.h"
 #include "DIDESLLexer.h"
 #include "DIDESLToken.h"
-#include <string>
 
 class DIDESL::Parcer {
 private:
 	Lexer* lexer;
 	Token currentToken;
+	DIDESLV_t<Token> currentTokens;
+	Token getToken();
+	Token getTokenPost();
+	void parceFunction();
+	void append();
+	void parceAnnotations();
+	void parceBlock(); // maybe will be DOMAIN args
+	void parceArgAfterDots(); // maybe will be TYPE args
+	void parceList(); // maybe arg for separator
+	void parceExpression();
+
 public:
-	Parcer(DIDESLS_t Script) : lexer(new Lexer(Script)), currentToken(lexer->next()) {};
+	struct Error {};
+	Parcer(DIDESLS_t);
+	DIDESLV_t<Token> parce();
+
 };
 
 #endif // !DID_ENGINE_SCRIPTING_LANGUAGE_PARCER_H

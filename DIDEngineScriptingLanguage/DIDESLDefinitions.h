@@ -2,6 +2,7 @@
 #define DID_ENGINE_SCRIPTING_LANGUAGE_DEFINITIONS_H
 
 #include <string>
+#include <vector>
 
 namespace DIDESL {
 	struct Token;
@@ -14,6 +15,7 @@ namespace DIDESL {
 	typedef short DIDESLBM_t; // bit mask
 	typedef std::wstring DIDESLS_t; // string
 	typedef wchar_t DIDESLC_t; // char
+	template<class Elem> using DIDESLV_t = std::vector<Elem>;
 	typedef unsigned DIDESLA_t;
 
 	enum Type { // TODO: add types
