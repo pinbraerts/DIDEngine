@@ -17,8 +17,9 @@ private:
 	void parceAnnotations();
 	void parceBlock(); // maybe will be DOMAIN args
 	void parceArgAfterDots(); // maybe will be TYPE args
-	void parceList(); // maybe arg for separator
+	void parceList(Token::Lexem = Token::CBRACE); // maybe arg for separator
 	void parceExpression();
+	void parceOperator();
 
 public:
 	struct Error {};
