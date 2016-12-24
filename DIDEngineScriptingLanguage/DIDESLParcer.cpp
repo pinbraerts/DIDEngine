@@ -112,7 +112,7 @@ void DIDESL::Parcer::parceExpression() {
 		if (currentToken.type != Token::CBRACE) throw Error(); // unexpected
 		break;
 	case Token::NAME:
-
+		break;
 	}
 }
 
