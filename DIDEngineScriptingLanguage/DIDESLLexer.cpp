@@ -132,7 +132,7 @@ DIDESL::Token DIDESL::Lexer::next() {
 	SIMPLE_CASE(L'^', OPERATOR_BIT);
 	SIMPLE_CASE(L'~', OPERATOR_BIT);
 	SIMPLE_CASE(L';', SEMICOLON);
-	SIMPLE_CASE(L',', OPERATOR_ENVIRONMENT);
+	SIMPLE_CASE(L',', COMMA);
 	IF_TWO_CASE(L'!', L'=', OPERATOR_BOOL, OPERATOR_BOOL);
 	IF_TWO_CASE(L'>', L'=', OPERATOR_BOOL, OPERATOR_BOOL);
 	IF_TWO_CASE(L'<', L'=', OPERATOR_BOOL, OPERATOR_BOOL);
@@ -148,9 +148,9 @@ DIDESL::Token DIDESL::Lexer::next() {
 		if (!script.eof() && getCharacter() == L'.' && script.peek() == L'.') {
 				getCharacter();
 				getCharacter();
-				return Token(Token::OPERATOR_ENVIRONMENT, L"...");
+				return Token(Token::DOTS, L"...");
 		}
-		else return Token(Token::OPERATOR_ENVIRONMENT, L'.');
+		else return Token(Token::DOT, L'.');
 	case L'"': case L'\'': {
 		DIDESLC_t div = currentCharacter;
 		DIDESLS_t str = L"";

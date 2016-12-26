@@ -21,7 +21,6 @@ private:
 	void parceExpression();
 	void parceOperator();
 	void parceDefinitions();
-	void parceAttributes();
 	void parceNamedExpression();
 
 public:

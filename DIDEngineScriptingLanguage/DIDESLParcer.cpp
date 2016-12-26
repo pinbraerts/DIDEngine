@@ -36,9 +36,7 @@ void DIDESL::Parcer::parceFunction() {
 		while (currentToken.type != Token::END && currentToken.type != Token::CBRACE) {
 			parceAnnotations();
 			switch (currentToken.type) {
-			case Token::OPERATOR_ENVIRONMENT:
-				if (currentToken.value != L"...") throw Error(); // expected ')' or TYPE or ... or @
-				return parceArgAfterDots();
+			case Token::DOTS: return parceArgAfterDots();
 			REFERENCE_CASE;
 			case Token::TYPE:
 				append(); // it's type
@@ -50,12 +48,10 @@ void DIDESL::Parcer::parceFunction() {
 			case Token::NAME:
 				append(); // we know name of arg
 				parceAnnotations();
-			case Token::OPERATOR_ENVIRONMENT:
-				if (currentToken.value == L",") {
-					append();
-					continue; // next argument
-				}
-				else throw Error(); // unexpected (maybe . will be such as in C# for classes and ... will be variadic args for got type)
+			case Token::COMMA:
+				append();
+				continue; // next argument
+				// maybe . will be such as in C# for classes and ... will be variadic args for got type
 			case Token::CBRACE:
 				append();
 				continue; // end of cycle
@@ -106,35 +102,27 @@ void DIDESL::Parcer::parceArgAfterDots() {
 void DIDESL::Parcer::parceList(Token::Lexem sep) {
 	while (currentToken.type != sep) {
 		parceExpression(); // and do smth
-		if (currentToken.type == Token::OPERATOR_ENVIRONMENT && currentToken.value == L",") append();
+		if (currentToken.type == Token::COMMA) append();
 	}
 }
 
 void DIDESL::Parcer::parceExpression() {
 	switch (currentToken.type) {
 	ANNOTATION_CASE;
+	REFERENCE_CASE;
 	case Token::OBRACE:
 		append();
 		parceExpression();
 		if (currentToken.type != Token::CBRACE) throw Error(); // unexpected
-		break;
-	REFERENCE_CASE;
 	case Token::TYPE:
 		parceDefinitions();
-		break;
+		return;
 	case Token::NAME:
 		append();
-		switch (currentToken.type) {
-		case Token::OPERATOR_SET:
+		parceNamedExpression();
+		if (currentToken.type == Token::OPERATOR_SET) {
 			append();
 			return parceExpression(); // and set it to current token
-		case Token::OPERATOR_ENVIRONMENT:
-			if (currentToken.value != L".") throw Error();
-			parceAttributes();
-		case Token::OBRACE:
-			append(); // it's function call
-			parceList(Token::CBRACE);
-			if (currentToken.type != Token::CBRACE) throw Error(); // unexpected
 		}
 		break;
 	case Token::BOOL_LITERAL: case Token::NUMBER_LITERAL:
@@ -147,7 +135,7 @@ void DIDESL::Parcer::parceExpression() {
 	switch (currentToken.type) {
 	case Token::OPERATOR_ARITHMETIC:
 		append();
-		return parceExpression();
+		return parceExpression(); // and smth with current expression
 	}
 }
 
@@ -215,35 +203,21 @@ void DIDESL::Parcer::parceDefinitions() {
 		if (currentToken.value != L"=") throw Error(); // it's first declaration
 		append();
 		parceExpression(); // and set it to current token
-	case Token::OPERATOR_ENVIRONMENT:
-		if (currentToken.value != L",") throw Error(); // . and ... isn't expected
+	case Token::COMMA:
 		append();
 		return parceDefinitions();
 	}
 }
 
-void DIDESL::Parcer::parceAttributes() {
-	while (currentToken.type == Token::OPERATOR_ENVIRONMENT && currentToken.value == L".") { // read attributes
-		append();
-		if (currentToken.type != Token::NAME) throw Error();
-		append();
-	}
-}
-
 void DIDESL::Parcer::parceNamedExpression() {
 	switch (currentToken.type) {
-	case Token::OPERATOR_SET:
-		append();
-		return parceExpression(); // and set it to current token
-	case Token::OPERATOR_ENVIRONMENT:
-		if (currentToken.value != L".") throw Error(); // ... or , unexpected
-		append();
-		if (currentToken.type != Token::NAME) throw Error(); // expected name
-		parceNamedExpression();
 	case Token::OBRACE:
 		append(); // it's function call
 		parceList(Token::CBRACE);
 		if (currentToken.type != Token::CBRACE) throw Error(); // unexpected
+	case Token::DOT:
+		append();
+		if (currentToken.type != Token::NAME) throw Error(); // expected name
 		parceNamedExpression();
 	}
 }

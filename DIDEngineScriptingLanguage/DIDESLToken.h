@@ -10,6 +10,9 @@ struct DIDESL::Token
 		START,
 		TYPE,
 		SEMICOLON,
+		COMMA,
+		DOT,
+		DOTS,
 		NAME,
 
 		// literals
@@ -29,7 +32,7 @@ struct DIDESL::Token
 		OPERATOR_SET, // =, +=, -=, *=, /=, %=
 		OPERATOR_BIT, // |, &, ^, ~
 		OPERATOR_BOOL, // &&, ||, !, ==, !=, >, >=, <, <=
-		OPERATOR_ENVIRONMENT, // ..., ,, .
+		// OPERATOR_ENVIRONMENT, // ..., ,, . replaced
 		OPERATOR_REFERENCE, // $
 
 		// braces
@@ -68,7 +71,7 @@ struct DIDESL::Token
 			return L"reserved function word";
 		case RES_OPERATOR:
 			return L"reserved operator word";
-		case OPERATOR_ARITHMETIC: case OPERATOR_BIT: case OPERATOR_BOOL: case OPERATOR_ENVIRONMENT: case OPERATOR_REFERENCE: case OPERATOR_SET:
+		case OPERATOR_ARITHMETIC: case OPERATOR_BIT: case OPERATOR_BOOL: case OPERATOR_REFERENCE: case OPERATOR_SET: case COMMA: case DOT: case DOTS:
 			return L"operator";
 		case OBRACE: case CBRACE: case OSBRACE: case CSBRACE: case OCBRACE: case CCBRACE:
 			return L"brace";
