@@ -16,6 +16,7 @@ DIDESL::Token DIDESL::Parcer::getTokenPost() {
 }
 
 #define ANNOTATION_CASE case Token::ANNOTATION: parceAnnotations()
+#define REFERENCE_CASE case Token::OPERATOR_REFERENCE: append()
 
 /// <summary>Parses function signature from current token and calls block parce</summary>
 void DIDESL::Parcer::parceFunction() {
@@ -23,6 +24,7 @@ void DIDESL::Parcer::parceFunction() {
 	switch (currentToken.type) {
 	ANNOTATION_CASE;
 	case Token::END: throw Error(); // unexpected eof
+	REFERENCE_CASE;
 	case Token::TYPE:
 		append(); // return type (unnecessary)
 		parceAnnotations();
@@ -30,15 +32,20 @@ void DIDESL::Parcer::parceFunction() {
 		append(); // identifier (unnecessary)
 		parceAnnotations();
 	case Token::OBRACE:
-		getToken();
+		append();
 		while (currentToken.type != Token::END && currentToken.type != Token::CBRACE) {
 			parceAnnotations();
-			if (currentToken.type == Token::OPERATOR_ENVIRONMENT) {
+			switch (currentToken.type) {
+			case Token::OPERATOR_ENVIRONMENT:
 				if (currentToken.value != L"...") throw Error(); // expected ')' or TYPE or ... or @
 				return parceArgAfterDots();
+			REFERENCE_CASE;
+			case Token::TYPE:
+				append(); // it's type
+				break;
+			default: throw Error(); // Type or ... expected
 			}
-			else if (currentToken.type != Token::TYPE) throw Error(); // expected ')' or TYPE or ... or @
-			switch (getToken().type) {
+			switch (currentToken.type) {
 			ANNOTATION_CASE;
 			case Token::NAME:
 				append(); // we know name of arg
@@ -88,7 +95,7 @@ void DIDESL::Parcer::parceArgAfterDots() {
 	switch (getToken().type) {
 	case Token::NAME: append(); // we know package's name
 								// after '...' won't be more args (maybe)
-		ANNOTATION_CASE; // but could be annotation
+	ANNOTATION_CASE; // but could be annotation
 	case Token::CBRACE:
 		append();
 		return parceBlock(); // parce { }
@@ -111,8 +118,36 @@ void DIDESL::Parcer::parceExpression() {
 		parceExpression();
 		if (currentToken.type != Token::CBRACE) throw Error(); // unexpected
 		break;
-	case Token::NAME:
+	REFERENCE_CASE;
+	case Token::TYPE:
+		parceDefinitions();
 		break;
+	case Token::NAME:
+		append();
+		switch (currentToken.type) {
+		case Token::OPERATOR_SET:
+			append();
+			return parceExpression(); // and set it to current token
+		case Token::OPERATOR_ENVIRONMENT:
+			if (currentToken.value != L".") throw Error();
+			parceAttributes();
+		case Token::OBRACE:
+			append(); // it's function call
+			parceList(Token::CBRACE);
+			if (currentToken.type != Token::CBRACE) throw Error(); // unexpected
+		}
+		break;
+	case Token::BOOL_LITERAL: case Token::NUMBER_LITERAL:
+	case Token::NUMBER_LITERAL_BINARY: case Token::NUMBER_LITERAL_OCTAL:
+	case Token::NUMBER_LITERAL_MHEX: case Token::STRING_LITERAL:
+		append();
+		break;
+	default: throw Error();
+	}
+	switch (currentToken.type) {
+	case Token::OPERATOR_ARITHMETIC:
+		append();
+		return parceExpression();
 	}
 }
 
@@ -162,6 +197,54 @@ void DIDESL::Parcer::parceOperator() {
 		if (currentToken.type != Token::SEMICOLON) throw Error(); // unexpected
 		append();
 		break;
+	}
+}
+
+void DIDESL::Parcer::parceDefinitions() {
+	switch (currentToken.type) {
+	ANNOTATION_CASE;
+	case Token::NAME:
+		append();
+		break;
+	case Token::SEMICOLON: return;
+	default: throw Error(); // name expected
+	}
+	switch (currentToken.type) {
+	ANNOTATION_CASE;
+	case Token::OPERATOR_SET:
+		if (currentToken.value != L"=") throw Error(); // it's first declaration
+		append();
+		parceExpression(); // and set it to current token
+	case Token::OPERATOR_ENVIRONMENT:
+		if (currentToken.value != L",") throw Error(); // . and ... isn't expected
+		append();
+		return parceDefinitions();
+	}
+}
+
+void DIDESL::Parcer::parceAttributes() {
+	while (currentToken.type == Token::OPERATOR_ENVIRONMENT && currentToken.value == L".") { // read attributes
+		append();
+		if (currentToken.type != Token::NAME) throw Error();
+		append();
+	}
+}
+
+void DIDESL::Parcer::parceNamedExpression() {
+	switch (currentToken.type) {
+	case Token::OPERATOR_SET:
+		append();
+		return parceExpression(); // and set it to current token
+	case Token::OPERATOR_ENVIRONMENT:
+		if (currentToken.value != L".") throw Error(); // ... or , unexpected
+		append();
+		if (currentToken.type != Token::NAME) throw Error(); // expected name
+		parceNamedExpression();
+	case Token::OBRACE:
+		append(); // it's function call
+		parceList(Token::CBRACE);
+		if (currentToken.type != Token::CBRACE) throw Error(); // unexpected
+		parceNamedExpression();
 	}
 }
 

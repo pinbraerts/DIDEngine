@@ -20,6 +20,9 @@ private:
 	void parceList(Token::Lexem = Token::CBRACE); // maybe arg for separator
 	void parceExpression();
 	void parceOperator();
+	void parceDefinitions();
+	void parceAttributes();
+	void parceNamedExpression();
 
 public:
 	struct Error {};
