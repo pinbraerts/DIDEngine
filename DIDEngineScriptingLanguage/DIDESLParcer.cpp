@@ -100,10 +100,12 @@ void DIDESL::Parcer::parceArgAfterDots() {
 }
 
 void DIDESL::Parcer::parceList(Token::Lexem sep) {
-	while (currentToken.type != sep) {
+	while (currentToken.type != Token::END && currentToken.type != sep) {
 		parceExpression(); // and do smth
 		if (currentToken.type == Token::COMMA) append();
 	}
+	if (currentToken.type != sep) throw Error(); // unexpected
+	append();
 }
 
 /// <summary>From current token</summary>
@@ -155,27 +157,109 @@ void DIDESL::Parcer::parceOperator() {
 	}
 }
 
-void DIDESL::Parcer::parceExpression() {
+#define DECLARE_PARCE(CURRENT, CMP, NEXT) bool DIDESL::Parcer::parce##CURRENT() {\
+bool res = parce##NEXT();\
+if (currentToken.type == Token::OPERATOR_##CMP) {\
+	append();\
+	parce##CURRENT();\
+	return false;\
+}\
+return res;\
+}
+
+bool DIDESL::Parcer::parceExpression() {
 	bool res = parceAdd();
 	if(currentToken.type == Token::OPERATOR_SET)
 		if (res) {
 			append();
 			parceExpression(); // and set it
+			return false;
 		}
 		else throw Error(); // set to non-lvalue
+	return res;
 }
 
-bool DIDESL::Parcer::parceAdd() {
-	parceMul();
-	if (currentToken.type);
+
+DECLARE_PARCE(Add, ADD, Mul)
+DECLARE_PARCE(Mul, MUL, BoolOr)
+DECLARE_PARCE(BoolOr, BOOL && currentToken.value == L"||", BoolAnd)
+DECLARE_PARCE(BoolAnd, BOOL && currentToken.value == L"&&", BitOr)
+DECLARE_PARCE(BitOr, BIT && currentToken.value == L"|", BitAnd)
+DECLARE_PARCE(BitAnd, BIT && currentToken.value == L"&", Unary)
+
+bool DIDESL::Parcer::parceUnary() {
+	bool res;
+	switch (currentToken.type) {
+	case Token::OPERATOR_BIT:
+		if (currentToken.value == L"~") append();
+		res = false;
+		break;
+	case Token::OPERATOR_BOOL:
+		if (currentToken.value == L"!") append();
+		res = false;
+		break;
+	case Token::OPERATOR_REFERENCE:
+		append();
+	default:
+		res = true;
+	}
+	res = res && parceMember();
+	return res;
 }
+
+bool DIDESL::Parcer::parceMember(bool first) {
+	bool res = first ? parceBasic() : true;
+	switch (currentToken.type) {
+	case Token::OBRACE:
+		if (!res) throw Error(); // can't call rvalue
+		append();
+		parceList(); // it's function call
+		parceMember(false);
+		break;
+	case Token::OSBRACE:
+		if (!res) throw Error(); // can't get index from rvalue
+		append();
+		parceExpression();
+		parceMember(false);
+		break;
+	case Token::DOT:
+		if (!res) throw Error(); // can't get attribute of rvalue
+		append();
+		if(!parceMember(true)) throw Error(); // name of attribute can't be rvalue
+		break;
+	}
+	return res;
+}
+
+bool DIDESL::Parcer::parceBasic() {
+	bool res;
+	switch (currentToken.type) {
+	case Token::OBRACE:
+		append();
+		res = parceExpression();
+		if (currentToken.type != Token::CBRACE) throw Error(); // unexpected
+		break;
+	case Token::BOOL_LITERAL: case Token::NUMBER_LITERAL:
+	case Token::NUMBER_LITERAL_BINARY: case Token::NUMBER_LITERAL_OCTAL:
+	case Token::NUMBER_LITERAL_MHEX: case Token::STRING_LITERAL:
+		append();
+		return false;
+		break;
+	case Token::NAME:
+		append();
+		return true;
+		break;
+	}
+	return res;
+}
+
 /*
 = parceExpression
 + - parceAdd
 * / % parceMul
-&& parceBoolAnd
 || parceBoolOr
-| parceBitOr
+&& parceBoolAnd
+| parceBitOr	
 & parceBitAnd
 $ ~ ! unary + - parceUnary
 f() . [] parceMember

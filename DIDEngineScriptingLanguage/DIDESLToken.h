@@ -28,7 +28,8 @@ struct DIDESL::Token
 		RES_OPERATOR, // while, if, return, break
 
 		// operators
-		OPERATOR_ARITHMETIC, // +, -, *, /, %
+		OPERATOR_ADD, // +, -
+		OPERATOR_MUL, // *, /, %
 		OPERATOR_SET, // =, +=, -=, *=, /=, %=
 		OPERATOR_BIT, // |, &, ^, ~
 		OPERATOR_BOOL, // &&, ||, !, ==, !=, >, >=, <, <=
@@ -71,7 +72,9 @@ struct DIDESL::Token
 			return L"reserved function word";
 		case RES_OPERATOR:
 			return L"reserved operator word";
-		case OPERATOR_ARITHMETIC: case OPERATOR_BIT: case OPERATOR_BOOL: case OPERATOR_REFERENCE: case OPERATOR_SET: case COMMA: case DOT: case DOTS:
+		case OPERATOR_ADD: case OPERATOR_MUL: case OPERATOR_BIT:
+		case OPERATOR_BOOL: case OPERATOR_REFERENCE: case OPERATOR_SET:
+		case COMMA: case DOT: case DOTS:
 			return L"operator";
 		case OBRACE: case CBRACE: case OSBRACE: case CSBRACE: case OCBRACE: case CCBRACE:
 			return L"brace";

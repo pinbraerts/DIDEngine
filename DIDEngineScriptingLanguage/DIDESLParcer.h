@@ -19,7 +19,7 @@ private:
 	void parceArgAfterDots(); // maybe will be TYPE args
 	void parceList(Token::Lexem = Token::CBRACE); // maybe arg for separator
 	void parceOperator();
-	void parceExpression();
+	bool parceExpression();
 	bool parceAdd();
 	bool parceMul();
 	bool parceBoolAnd();
@@ -27,7 +27,8 @@ private:
 	bool parceBitOr();
 	bool parceBitAnd();
 	bool parceUnary();
-	bool parceMember();
+	bool parceMember(bool=true);
+	bool parceBasic();
 	/*
 	void parceDefinitions();
 	void parceNamedExpression();*/
