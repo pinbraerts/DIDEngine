@@ -15,55 +15,76 @@ DIDESL::Token DIDESL::Parcer::getTokenPost() {
 	return tem;
 }
 
-#define ANNOTATION_CASE case Token::ANNOTATION: parceAnnotations()
-#define REFERENCE_CASE case Token::OPERATOR_REFERENCE: append()
+#define TYPE_CMP(X) if (currentToken.type == Token::X)
+#define THROW_NOCMP(X) if (currentToken.type != Token::X) throw Error()
+#define TOKEN_TYPE_CMP TYPE_CMP(OPERATOR_REFERENCE) {\
+	append();\
+	parceAnnotations();\
+	THROW_NOCMP(TYPE);\
+	append();\
+	parceAnnotations();\
+}\
+else TYPE_CMP(TYPE) {\
+	append();\
+	parceAnnotations();\
+}
 
 /// <summary>Parses function signature from current token and calls block parce</summary>
-void DIDESL::Parcer::parceFunction() {
-	while (currentToken.type == Token::RES_FUNCTION) currentTokens.push_back(getTokenPost()); // read qualifiers
-	switch (currentToken.type) {
-	ANNOTATION_CASE;
-	case Token::END: throw Error(); // unexpected eof
-	REFERENCE_CASE;
-	case Token::TYPE:
-		append(); // return type (unnecessary)
+bool DIDESL::Parcer::parceFunction() {
+	bool isf = false;
+	while (currentToken.type == Token::RES_FUNCTION) {
+		if (!isf) isf = currentToken.value == L"function";
 		parceAnnotations();
-	case Token::NAME:
-		append(); // identifier (unnecessary)
-		parceAnnotations();
-	case Token::OBRACE:
-		append();
-		while (currentToken.type != Token::END && currentToken.type != Token::CBRACE) {
-			parceAnnotations();
-			switch (currentToken.type) {
-			case Token::DOTS: return parceArgAfterDots();
-			REFERENCE_CASE;
-			case Token::TYPE:
-				append(); // it's type
-				break;
-			default: throw Error(); // Type or ... expected
-			}
-			switch (currentToken.type) {
-			ANNOTATION_CASE;
-			case Token::NAME:
-				append(); // we know name of arg
-				parceAnnotations();
-			case Token::COMMA:
-				append();
-				continue; // next argument
-				// maybe . will be such as in C# for classes and ... will be variadic args for got type
-			case Token::CBRACE:
-				append();
-				continue; // end of cycle
-			default: throw Error(); // unexpected
-			}
-		}
-		if (currentToken.type == Token::END) throw Error(); // unexpected
-		append();
-		parceAnnotations();
-		if (currentToken.type == Token::OCBRACE) return parceBlock(); // and some args about function
-	default: throw Error(); // unexpected
+		append(); // read qualifiers
 	}
+	parceAnnotations();
+	TYPE_CMP(END) throw Error(); // unexpected
+	TOKEN_TYPE_CMP // it's return type
+	else if (!isf) throw Error(); // must be return type or word "function"
+	TYPE_CMP(NAME) {
+		append(); // it's name (unnessesary)
+		parceAnnotations();
+	}
+	TYPE_CMP(OBRACE) {
+		append();
+		while (true) {
+			parceAnnotations();
+			TOKEN_TYPE_CMP // type
+			else TYPE_CMP(DOTS) {
+				append();
+				parceAnnotations();
+				TYPE_CMP(NAME) {
+					append(); // name (unnessesary)
+					parceAnnotations();
+				}
+				TYPE_CMP(COMMA) throw Error(); // after ... can't be more arguments
+				THROW_NOCMP(CBRACE);
+				append();
+				break;
+			}
+			else throw Error(); // type expected
+			TYPE_CMP(NAME) {
+				append(); // name of arg (unnessesary)
+				parceAnnotations();
+			}
+			TYPE_CMP(COMMA) {
+				append();
+				continue;
+			}
+			THROW_NOCMP(CBRACE); // unexpected
+			append();
+			break;
+		}
+		parceAnnotations();
+	}
+	else throw Error(); // in function declaration must be args list
+	TYPE_CMP(OCBRACE) {
+		parceBlock(); // and some args about functions
+		THROW_NOCMP(CCBRACE); // unexpected
+		append();
+		return true;
+	}
+	return false; // it's function declaration
 }
 
 void DIDESL::Parcer::append() {
@@ -72,7 +93,7 @@ void DIDESL::Parcer::append() {
 
 /// <summary>Call it everythere</summary>
 void DIDESL::Parcer::parceAnnotations() {
-	while (currentToken.type == Token::ANNOTATION); {
+	while (currentToken.type == Token::ANNOTATION) {
 		append();
 		if (getToken().type == Token::OBRACE) parceList();
 		// and do smth with annotation
@@ -82,21 +103,7 @@ void DIDESL::Parcer::parceAnnotations() {
 /// <summary>Call it if type == }</summary>
 void DIDESL::Parcer::parceBlock() {
 	append();
-	while (currentToken.type != Token::CCBRACE) parceOperator();
-}
-
-/// <summary>Call if value == ...</summary>
-void DIDESL::Parcer::parceArgAfterDots() {
-	append(); // it's variadic arguments function
-	switch (getToken().type) {
-	case Token::NAME: append(); // we know package's name
-								// after '...' won't be more args (maybe)
-	ANNOTATION_CASE; // but could be annotation
-	case Token::CBRACE:
-		append();
-		return parceBlock(); // parce { }
-	default: throw Error(); // unexpected current token
-	}
+	while (currentToken.type != Token::CCBRACE && currentToken.type != Token::END) parceOperator();
 }
 
 void DIDESL::Parcer::parceList(Token::Lexem sep) {
@@ -110,35 +117,44 @@ void DIDESL::Parcer::parceList(Token::Lexem sep) {
 
 /// <summary>From current token</summary>
 void DIDESL::Parcer::parceOperator() {
+	parceAnnotations();
 	switch (currentToken.type) {
-		ANNOTATION_CASE;
 	case Token::OCBRACE: // it's complex operator
 		parceBlock();
+		THROW_NOCMP(CCBRACE);
+		append();
 		break;
 	case Token::RES_OPERATOR: // here some operations for if, while, for, return
 		if (currentToken.value == L"return") {
 			append();
 			parceExpression();
-			if (currentToken.type != Token::SEMICOLON) throw Error(); // unexpected
+			THROW_NOCMP(SEMICOLON); // unexpected
 			append();
 		}
 		else if (currentToken.value == L"break") {
 			// maybe will be cycle identifier
 			getToken();
 			parceAnnotations();
-			if (currentToken.type != Token::SEMICOLON) throw Error(); // unexpected
+			THROW_NOCMP(SEMICOLON); // unexpected
 			append();
 		}
 		else if (currentToken.value == L"while") {
-			if (getToken().type != Token::OBRACE) throw Error(); // unexpected
+			append();
+			THROW_NOCMP(OBRACE); // unexpected
+			append();
 			parceExpression();
-			if (getToken().type != Token::CBRACE) throw Error(); // unexpected
+			THROW_NOCMP(CBRACE); // unexpected
+			append();
+			parceAnnotations();
 			parceOperator();
 		}
 		else if (currentToken.value == L"if") {
-			if (getToken().type != Token::OBRACE) throw Error(); // unexpected
+			append();
+			THROW_NOCMP(OBRACE); // unexpected
+			append();
 			parceExpression();
-			if (getToken().type != Token::CBRACE) throw Error(); // unexpected
+			THROW_NOCMP(CBRACE); // unexpected
+			append();
 			parceOperator();
 			parceAnnotations();
 			if (currentToken.type == Token::RES_OPERATOR && currentToken.value == L"else") {
@@ -150,7 +166,49 @@ void DIDESL::Parcer::parceOperator() {
 							// TODO: add more operators
 		break;
 	default:
-		parceExpression();
+		TYPE_CMP(OPERATOR_REFERENCE) {
+			append();
+			parceAnnotations();
+			THROW_NOCMP(TYPE);
+			append();
+			while (true) {
+				parceAnnotations();
+				if (parceAdd()) { // it's lvalue
+					parceAnnotations();
+					TYPE_CMP(OPERATOR_SET && currentToken.value == L"=") parceExpression(); // and set it
+					else throw Error();
+					parceAnnotations();
+					TYPE_CMP(COMMA) {
+						append();
+						continue;
+					}
+					TYPE_CMP(SEMICOLON) break;
+					throw Error(); // unexpected
+				}
+			}
+		}
+		TYPE_CMP(TYPE) {
+			append();
+			while (true) {
+				parceAnnotations();
+				if (parceAdd()) { // it's lvalue
+					parceAnnotations();
+					TYPE_CMP(OPERATOR_SET && currentToken.value == L"=") {
+						append();
+						parceExpression(); // and set it
+					}
+					else throw Error();
+					parceAnnotations();
+					TYPE_CMP(COMMA) {
+						append();
+						continue;
+					}
+					TYPE_CMP(SEMICOLON) break;
+					throw Error(); // unexpected
+				}
+			}
+		}
+		else parceExpression();
 		if (currentToken.type != Token::SEMICOLON) throw Error(); // unexpected
 		append();
 		break;
@@ -179,11 +237,11 @@ bool DIDESL::Parcer::parceExpression() {
 	return res;
 }
 
-
 DECLARE_PARCE(Add, ADD, Mul)
 DECLARE_PARCE(Mul, MUL, BoolOr)
 DECLARE_PARCE(BoolOr, BOOL && currentToken.value == L"||", BoolAnd)
-DECLARE_PARCE(BoolAnd, BOOL && currentToken.value == L"&&", BitOr)
+DECLARE_PARCE(BoolAnd, BOOL && currentToken.value == L"&&", Bool)
+DECLARE_PARCE(Bool, BOOL, BitOr)
 DECLARE_PARCE(BitOr, BIT && currentToken.value == L"|", BitAnd)
 DECLARE_PARCE(BitAnd, BIT && currentToken.value == L"&", Unary)
 
@@ -232,25 +290,22 @@ bool DIDESL::Parcer::parceMember(bool first) {
 }
 
 bool DIDESL::Parcer::parceBasic() {
-	bool res;
 	switch (currentToken.type) {
 	case Token::OBRACE:
 		append();
-		res = parceExpression();
-		if (currentToken.type != Token::CBRACE) throw Error(); // unexpected
-		break;
+		parceList();
+		return false;
 	case Token::BOOL_LITERAL: case Token::NUMBER_LITERAL:
 	case Token::NUMBER_LITERAL_BINARY: case Token::NUMBER_LITERAL_OCTAL:
 	case Token::NUMBER_LITERAL_MHEX: case Token::STRING_LITERAL:
 		append();
 		return false;
-		break;
 	case Token::NAME:
 		append();
 		return true;
-		break;
+	default:
+		return false;
 	}
-	return res;
 }
 
 /*
@@ -259,6 +314,7 @@ bool DIDESL::Parcer::parceBasic() {
 * / % parceMul
 || parceBoolOr
 && parceBoolAnd
+== != parceBool
 | parceBitOr	
 & parceBitAnd
 $ ~ ! unary + - parceUnary
@@ -266,88 +322,27 @@ f() . [] parceMember
 (...) name "" 1 true parceBasic
 */
 
-/*
-void DIDESL::Parcer::parceExpression() {
-	switch (currentToken.type) {
-	ANNOTATION_CASE;
-	REFERENCE_CASE;
-	case Token::OBRACE:
-		append();
-		parceExpression();
-		if (currentToken.type != Token::CBRACE) throw Error(); // unexpected
-	case Token::TYPE:
-		parceDefinitions();
-		return;
-	case Token::NAME:
-		append();
-		parceNamedExpression();
-		if (currentToken.type == Token::OPERATOR_SET) {
-			append();
-			return parceExpression(); // and set it to current token
-		}
-		break;
-	case Token::BOOL_LITERAL: case Token::NUMBER_LITERAL:
-	case Token::NUMBER_LITERAL_BINARY: case Token::NUMBER_LITERAL_OCTAL:
-	case Token::NUMBER_LITERAL_MHEX: case Token::STRING_LITERAL:
-		append();
-		break;
-	default: throw Error();
-	}
-	switch (currentToken.type) {
-	case Token::OPERATOR_ARITHMETIC:
-		append();
-		return parceExpression(); // and smth with current expression
-	}
-}
-
-void DIDESL::Parcer::parceDefinitions() {
-	switch (currentToken.type) {
-	ANNOTATION_CASE;
-	case Token::NAME:
-		append();
-		break;
-	case Token::SEMICOLON: return;
-	default: throw Error(); // name expected
-	}
-	switch (currentToken.type) {
-	ANNOTATION_CASE;
-	case Token::OPERATOR_SET:
-		if (currentToken.value != L"=") throw Error(); // it's first declaration
-		append();
-		parceExpression(); // and set it to current token
-	case Token::COMMA:
-		append();
-		return parceDefinitions();
-	}
-}
-
-void DIDESL::Parcer::parceNamedExpression() {
-	switch (currentToken.type) {
-	case Token::OBRACE:
-		append(); // it's function call
-		parceList(Token::CBRACE);
-		if (currentToken.type != Token::CBRACE) throw Error(); // unexpected
-	case Token::DOT:
-		append();
-		if (currentToken.type != Token::NAME) throw Error(); // expected name
-		parceNamedExpression();
-	}
-}*/
-
 DIDESL::Parcer::Parcer(DIDESLS_t Script) : lexer(new Lexer(Script)), currentTokens() {
 	getToken();
 }
 
+DIDESL::Parcer::Parcer() : lexer(new Lexer()) {}
+
+void DIDESL::Parcer::setFile(DIDESLS_t path) {
+	lexer->setFile(path);
+	getToken();
+}
+
 DIDESL::DIDESLV_t<DIDESL::Token> DIDESL::Parcer::parce() {
-	switch (currentToken.type) {
-	ANNOTATION_CASE;
-	case Token::START:
-		currentTokens.push_back(currentToken);
-		getToken();
-		parceAnnotations(); // go to next token
-	case Token::END: return currentTokens;
-	case Token::RES_FUNCTION:
-		parceFunction();
-		return parce();
+	parceAnnotations();
+	TYPE_CMP(START) {
+		append();
+		parceAnnotations();
 	}
+	TYPE_CMP(RES_FUNCTION) {
+		parceFunction();
+		parce();
+	}
+	TYPE_CMP(END && (currentTokens.empty() || currentTokens.back().type != Token::END)) append();
+	return currentTokens;
 }

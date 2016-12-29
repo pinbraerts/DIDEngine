@@ -19,6 +19,4 @@
 #define __MACRO_SELECTOR(TARGET, ...) __MACRO_BRACES(__ARGS_SELECTOR_8, (__VA_ARGS__, TARGET##_8, TARGET##_7, TARGET##_6, TARGET##_5, TARGET##_4, TARGET##_3, TARGET##_2, TARGET##_1, ))
 #define __CHOOSE_FROM_ARG(TARGET, ...) __MACRO_SELECTOR(TARGET, TARGET##_0 __VA_ARGS__ ())
 
-// template<class RET, class ...ARGS> using Function = RET(*)(ARGS...); -- так, захотелось кое-что проверить, работает
-
 #endif // !UTILS_H

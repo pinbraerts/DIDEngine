@@ -12,11 +12,11 @@ private:
 	DIDESLV_t<Token> currentTokens;
 	Token getToken();
 	Token getTokenPost();
-	void parceFunction();
+	bool parceFunction();
 	void append();
 	void parceAnnotations();
 	void parceBlock(); // maybe will be DOMAIN args
-	void parceArgAfterDots(); // maybe will be TYPE args
+	void parceArgsAfterDots(); // maybe will be TYPE args
 	void parceList(Token::Lexem = Token::CBRACE); // maybe arg for separator
 	void parceOperator();
 	bool parceExpression();
@@ -24,6 +24,7 @@ private:
 	bool parceMul();
 	bool parceBoolAnd();
 	bool parceBoolOr();
+	bool parceBool();
 	bool parceBitOr();
 	bool parceBitAnd();
 	bool parceUnary();
@@ -36,6 +37,8 @@ private:
 public:
 	struct Error {};
 	Parcer(DIDESLS_t);
+	Parcer();
+	void setFile(DIDESLS_t);
 	DIDESLV_t<Token> parce();
 
 };
