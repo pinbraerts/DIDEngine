@@ -18,10 +18,19 @@ private:
 	void parceBlock(); // maybe will be DOMAIN args
 	void parceArgAfterDots(); // maybe will be TYPE args
 	void parceList(Token::Lexem = Token::CBRACE); // maybe arg for separator
-	void parceExpression();
 	void parceOperator();
+	void parceExpression();
+	bool parceAdd();
+	bool parceMul();
+	bool parceBoolAnd();
+	bool parceBoolOr();
+	bool parceBitOr();
+	bool parceBitAnd();
+	bool parceUnary();
+	bool parceMember();
+	/*
 	void parceDefinitions();
-	void parceNamedExpression();
+	void parceNamedExpression();*/
 
 public:
 	struct Error {};

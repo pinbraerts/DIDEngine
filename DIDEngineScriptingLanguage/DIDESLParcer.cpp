@@ -106,43 +106,10 @@ void DIDESL::Parcer::parceList(Token::Lexem sep) {
 	}
 }
 
-void DIDESL::Parcer::parceExpression() {
-	switch (currentToken.type) {
-	ANNOTATION_CASE;
-	REFERENCE_CASE;
-	case Token::OBRACE:
-		append();
-		parceExpression();
-		if (currentToken.type != Token::CBRACE) throw Error(); // unexpected
-	case Token::TYPE:
-		parceDefinitions();
-		return;
-	case Token::NAME:
-		append();
-		parceNamedExpression();
-		if (currentToken.type == Token::OPERATOR_SET) {
-			append();
-			return parceExpression(); // and set it to current token
-		}
-		break;
-	case Token::BOOL_LITERAL: case Token::NUMBER_LITERAL:
-	case Token::NUMBER_LITERAL_BINARY: case Token::NUMBER_LITERAL_OCTAL:
-	case Token::NUMBER_LITERAL_MHEX: case Token::STRING_LITERAL:
-		append();
-		break;
-	default: throw Error();
-	}
-	switch (currentToken.type) {
-	case Token::OPERATOR_ARITHMETIC:
-		append();
-		return parceExpression(); // and smth with current expression
-	}
-}
-
 /// <summary>From current token</summary>
 void DIDESL::Parcer::parceOperator() {
 	switch (currentToken.type) {
-	ANNOTATION_CASE;
+		ANNOTATION_CASE;
 	case Token::OCBRACE: // it's complex operator
 		parceBlock();
 		break;
@@ -178,13 +145,74 @@ void DIDESL::Parcer::parceOperator() {
 			}
 		}
 		else throw Error(); // unexpected
-		// TODO: add more operators
+							// TODO: add more operators
 		break;
 	default:
 		parceExpression();
 		if (currentToken.type != Token::SEMICOLON) throw Error(); // unexpected
 		append();
 		break;
+	}
+}
+
+void DIDESL::Parcer::parceExpression() {
+	bool res = parceAdd();
+	if(currentToken.type == Token::OPERATOR_SET)
+		if (res) {
+			append();
+			parceExpression(); // and set it
+		}
+		else throw Error(); // set to non-lvalue
+}
+
+bool DIDESL::Parcer::parceAdd() {
+	parceMul();
+	if (currentToken.type);
+}
+/*
+= parceExpression
++ - parceAdd
+* / % parceMul
+&& parceBoolAnd
+|| parceBoolOr
+| parceBitOr
+& parceBitAnd
+$ ~ ! unary + - parceUnary
+f() . [] parceMember
+(...) name "" 1 true parceBasic
+*/
+
+/*
+void DIDESL::Parcer::parceExpression() {
+	switch (currentToken.type) {
+	ANNOTATION_CASE;
+	REFERENCE_CASE;
+	case Token::OBRACE:
+		append();
+		parceExpression();
+		if (currentToken.type != Token::CBRACE) throw Error(); // unexpected
+	case Token::TYPE:
+		parceDefinitions();
+		return;
+	case Token::NAME:
+		append();
+		parceNamedExpression();
+		if (currentToken.type == Token::OPERATOR_SET) {
+			append();
+			return parceExpression(); // and set it to current token
+		}
+		break;
+	case Token::BOOL_LITERAL: case Token::NUMBER_LITERAL:
+	case Token::NUMBER_LITERAL_BINARY: case Token::NUMBER_LITERAL_OCTAL:
+	case Token::NUMBER_LITERAL_MHEX: case Token::STRING_LITERAL:
+		append();
+		break;
+	default: throw Error();
+	}
+	switch (currentToken.type) {
+	case Token::OPERATOR_ARITHMETIC:
+		append();
+		return parceExpression(); // and smth with current expression
 	}
 }
 
@@ -220,7 +248,7 @@ void DIDESL::Parcer::parceNamedExpression() {
 		if (currentToken.type != Token::NAME) throw Error(); // expected name
 		parceNamedExpression();
 	}
-}
+}*/
 
 DIDESL::Parcer::Parcer(DIDESLS_t Script) : lexer(new Lexer(Script)), currentTokens() {
 	getToken();
