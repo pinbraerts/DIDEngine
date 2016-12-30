@@ -6,12 +6,41 @@
 #include "DIDESLToken.h"
 
 class DIDESL::Parcer {
+public:
+	struct Error {
+		enum Code {
+			INVALID_FILE,
+			ATTR_RVALUE,
+			INDEX_RVALUE,
+			CALL_RVALUE,
+			SET_TO_NON_LVALUE,
+			WRONG_DECLARATION,
+			NO_LIST_IN_FUNC,
+			ARGS_AFTER_DOTS,
+			WRONG_FUNCTION,
+			UNEXPECTED
+		};
+
+		Error(const Parcer*, Code=UNEXPECTED);
+		const DIDESLS_t message;
+	};
+
+	Parcer(DIDESLS_t, DIDESLS_t=L"Hardcore");
+	Parcer();
+
+	void setString(DIDESLS_t, DIDESLS_t=L"Hardcore");
+	void setFile(DIDESLS_t);
+	DIDESLV_t<Token> parce();
+
 private:
 	Lexer* lexer;
 	Token currentToken;
 	DIDESLV_t<Token> currentTokens;
+	DIDESLS_t file;
 	Token getToken();
 	Token getTokenPost();
+
+	DIDESLS_t errorMessage(Error::Code) const;
 	bool parceFunction();
 	void append();
 	void parceAnnotations();
@@ -28,18 +57,8 @@ private:
 	bool parceBitOr();
 	bool parceBitAnd();
 	bool parceUnary();
-	bool parceMember(bool=true);
+	bool parceMember(bool = true);
 	bool parceBasic();
-
-public:
-	struct Error {
-		Error(DIDESLS_t=L"Unexpected");
-		const DIDESLS_t message;
-	};
-	Parcer(DIDESLS_t);
-	Parcer();
-	void setFile(DIDESLS_t);
-	DIDESLV_t<Token> parce();
 
 };
 

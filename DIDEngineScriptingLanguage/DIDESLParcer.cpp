@@ -1,11 +1,12 @@
 #include "DIDESLParcer.h"
+#define PARCER_ERROR(...) throw Error(this, __VA_ARGS__)
 
 DIDESL::Token DIDESL::Parcer::getToken()
 {
 	try {
 		return currentToken = lexer->next();
 	} catch (Lexer::EOFError) {
-		throw Error(); // unexpected eof
+		PARCER_ERROR(Error::INVALID_FILE);
 	}
 }
 
@@ -15,8 +16,41 @@ DIDESL::Token DIDESL::Parcer::getTokenPost() {
 	return tem;
 }
 
+#define CODE_CASE(CODE, MSG) case Error::CODE: msg += MSG; goto entered
+
+DIDESL::DIDESLS_t DIDESL::Parcer::errorMessage(DIDESL::Parcer::Error::Code code) const {
+	DIDESLS_t msg = L"Error (code: ", line;
+	unsigned pos;
+	msg += std::to_wstring(code);
+	msg += L"): ";
+	switch (code) {
+	CODE_CASE(WRONG_FUNCTION, L"in function declaration must be return type of word \"function\"");
+	CODE_CASE(ARGS_AFTER_DOTS, L"arguments after ...");
+	CODE_CASE(NO_LIST_IN_FUNC, L"in function declaration must be args list");
+	CODE_CASE(WRONG_DECLARATION, L"just = can be in first declaration");
+	CODE_CASE(SET_TO_NON_LVALUE, L"set to non-lvalue");
+	CODE_CASE(CALL_RVALUE, L"rvalue isn't callable");
+	CODE_CASE(INDEX_RVALUE, L"rvalue isn't indexable");
+	CODE_CASE(ATTR_RVALUE, L"name of attribute can't be rvalue");
+	CODE_CASE(UNEXPECTED, L"unexpected "; msg += Token::toString(currentToken.type); if (currentToken.type == Token::END) break);
+	CODE_CASE(INVALID_FILE, L"file \""; msg += file; msg += L"\" is invalid"; break);
+	entered:
+		pos = lexer->getPos();
+		line = lexer->getCurrentString();
+		msg += L" in ";
+		msg += std::to_wstring(lexer->getLine());
+		msg += L" line on ";
+		msg += std::to_wstring(pos);
+		msg += L" position:\n";
+		msg += line + L"\n";
+		for (unsigned i = 0; i < pos - 1; ++i) msg += (line[i] == L'\t' ? L'\t' : L' ');
+		msg += L'^';
+	}
+	return msg;
+}
+
 #define TYPE_CMP(X) if (currentToken.type == Token::X)
-#define THROW_NOCMP(X) if (currentToken.type != Token::X) throw Error()
+#define THROW_NOCMP(X) if (currentToken.type != Token::X) throw Error(this)
 #define TOKEN_TYPE_CMP TYPE_CMP(OPERATOR_REFERENCE) {\
 	append();\
 	parceAnnotations();\
@@ -38,9 +72,9 @@ bool DIDESL::Parcer::parceFunction() {
 		append(); // read qualifiers
 	}
 	parceAnnotations();
-	TYPE_CMP(END) throw Error(); // unexpected
+	TYPE_CMP(END) throw Error(this); // unexpected
 	TOKEN_TYPE_CMP // it's return type
-	else if (!isf) throw Error(L"In function declaration must be return type of word \"function\""); // must be return type or word "function"
+	else if (!isf) PARCER_ERROR(Error::WRONG_FUNCTION); // must be return type or word "function"
 	TYPE_CMP(NAME) {
 		append(); // it's name (unnessesary)
 		parceAnnotations();
@@ -57,12 +91,12 @@ bool DIDESL::Parcer::parceFunction() {
 					append(); // name (unnessesary)
 					parceAnnotations();
 				}
-				TYPE_CMP(COMMA) throw Error(L"Arguments after ..."); // after ... can't be more arguments
+				TYPE_CMP(COMMA) PARCER_ERROR(Error::ARGS_AFTER_DOTS); // after ... can't be more arguments
 				THROW_NOCMP(CBRACE);
 				append();
 				break;
 			}
-			else throw Error(L"Expected type of argument"); // type expected
+			else throw Error(this); // type expected
 			TYPE_CMP(NAME) {
 				append(); // name of arg (unnessesary)
 				parceAnnotations();
@@ -77,7 +111,7 @@ bool DIDESL::Parcer::parceFunction() {
 		}
 		parceAnnotations();
 	}
-	else throw Error(L"In function declaration must be args list"); // in function declaration must be args list
+	else PARCER_ERROR(Error::NO_LIST_IN_FUNC); // in function declaration must be args list
 	TYPE_CMP(OCBRACE) {
 		parceBlock(); // and some args about functions
 		THROW_NOCMP(CCBRACE); // unexpected
@@ -109,9 +143,10 @@ void DIDESL::Parcer::parceBlock() {
 void DIDESL::Parcer::parceList(Token::Lexem sep) {
 	while (currentToken.type != Token::END && currentToken.type != sep) {
 		parceExpression(); // and do smth
-		if (currentToken.type == Token::COMMA) append();
+		THROW_NOCMP(COMMA);
+		append();
 	}
-	if (currentToken.type != sep) throw Error(); // unexpected
+	if (currentToken.type != sep) PARCER_ERROR(); // unexpected
 	append();
 }
 
@@ -162,7 +197,7 @@ void DIDESL::Parcer::parceOperator() {
 				parceOperator();
 			}
 		}
-		else throw Error(); // unexpected
+		else throw Error(this); // unexpected
 							// TODO: add more operators
 		break;
 	default:
@@ -176,14 +211,14 @@ void DIDESL::Parcer::parceOperator() {
 				if (parceAdd()) { // it's lvalue
 					parceAnnotations();
 					TYPE_CMP(OPERATOR_SET && currentToken.value == L"=") parceExpression(); // and set it
-					else throw Error(L"+=, -=, *=, /=, %= can't be in first declaration");
+					else PARCER_ERROR(Error::WRONG_DECLARATION);
 					parceAnnotations();
 					TYPE_CMP(COMMA) {
 						append();
 						continue;
 					}
 					TYPE_CMP(SEMICOLON) break;
-					throw Error(); // unexpected
+					throw Error(this); // unexpected
 				}
 			}
 		}
@@ -197,19 +232,19 @@ void DIDESL::Parcer::parceOperator() {
 						append();
 						parceExpression(); // and set it
 					}
-					else throw Error(L"+=, -=, *=, /=, %= can't be in first declaration");
+					else PARCER_ERROR(Error::WRONG_DECLARATION);
 					parceAnnotations();
 					TYPE_CMP(COMMA) {
 						append();
 						continue;
 					}
 					TYPE_CMP(SEMICOLON) break;
-					throw Error(); // unexpected
+					throw Error(this); // unexpected
 				}
 			}
 		}
 		else parceExpression();
-		if (currentToken.type != Token::SEMICOLON) throw Error(); // unexpected
+		if (currentToken.type != Token::SEMICOLON) throw Error(this); // unexpected
 		append();
 		break;
 	}
@@ -233,7 +268,7 @@ bool DIDESL::Parcer::parceExpression() {
 			parceExpression(); // and set it
 			return false;
 		}
-		else throw Error(L"Value can't be set to non-lvalue argument"); // set to non-lvalue
+		else PARCER_ERROR(Error::SET_TO_NON_LVALUE); // set to non-lvalue
 	return res;
 }
 
@@ -269,20 +304,20 @@ bool DIDESL::Parcer::parceMember(bool first) {
 	bool res = first ? parceBasic() : true;
 	switch (currentToken.type) {
 	case Token::OBRACE:
-		if (!res) throw Error(L"Rvalue isn't callable"); // can't call rvalue
+		if (!res) PARCER_ERROR(Error::CALL_RVALUE); // can't call rvalue
 		append();
 		parceList(); // it's function call
 		parceMember(false);
 		break;
 	case Token::OSBRACE:
-		if (!res) throw Error(L"Rvalue isn't indexable"); // can't get index from rvalue
+		if (!res) PARCER_ERROR(Error::INDEX_RVALUE); // can't get index from rvalue
 		append();
 		parceExpression();
 		parceMember(false);
 		break;
 	case Token::DOT:
 		append();
-		if(!parceMember(true)) throw Error(L"Name of attribute can't be rvalue"); // name of attribute can't be rvalue
+		if(!parceMember(true)) PARCER_ERROR(Error::ATTR_RVALUE); // name of attribute can't be rvalue
 		break;
 	}
 	return res;
@@ -321,14 +356,21 @@ f() . [] parceMember
 (...) name "" 1 true parceBasic
 */
 
-DIDESL::Parcer::Parcer(DIDESLS_t Script) : lexer(new Lexer(Script)), currentTokens() {
+DIDESL::Parcer::Parcer(DIDESLS_t Script, DIDESLS_t File) : lexer(new Lexer(Script)), currentTokens(), file(File) {
 	getToken();
 }
 
 DIDESL::Parcer::Parcer() : lexer(new Lexer()) {}
 
+void DIDESL::Parcer::setString(DIDESLS_t String, DIDESLS_t File) {
+	lexer->setString(String);
+	file = File;
+	getToken();
+}
+
 void DIDESL::Parcer::setFile(DIDESLS_t path) {
 	lexer->setFile(path);
+	file = path;
 	getToken();
 }
 
@@ -346,4 +388,4 @@ DIDESL::DIDESLV_t<DIDESL::Token> DIDESL::Parcer::parce() {
 	return currentTokens;
 }
 
-DIDESL::Parcer::Error::Error(DIDESLS_t Message) : message(Message) {}
+DIDESL::Parcer::Error::Error(const DIDESL::Parcer* parcer, DIDESL::Parcer::Error::Code code) : message(parcer->errorMessage(code)) {}

@@ -6,7 +6,7 @@
 
 DIDESL::Lexer::Lexer() {}
 
-DIDESL::Lexer::Lexer(DIDESLS_t Script) : script(Script), lines(1), pos(0) {
+DIDESL::Lexer::Lexer(DIDESLS_t Script) : script(Script), lines(1), pos(0), currentString(L"") {
 	getCharacter();
 }
 
@@ -28,6 +28,7 @@ void DIDESL::Lexer::setString(DIDESLS_t Script) {
 	pos = 0;
 	script.str(Script);
 	script.seekg(0);
+	currentString = L"";
 	getCharacter();
 }
 
@@ -36,14 +37,19 @@ void DIDESL::Lexer::setStream(std::wistringstream newStream) {
 	pos = 0;
 	script.str(newStream.str());
 	script.seekg(0);
+	currentString = L"";
 	getCharacter();
 }
 
-unsigned DIDESL::Lexer::getPos() {
-	return pos;
+DIDESL::DIDESLS_t DIDESL::Lexer::getCurrentString() {
+	return currentString;
 }
 
-unsigned DIDESL::Lexer::getLines() {
+unsigned DIDESL::Lexer::getPos() {
+	return pos - 1;
+}
+
+unsigned DIDESL::Lexer::getLine() {
 	return lines;
 }
 
@@ -89,12 +95,16 @@ bool DIDESL::Lexer::isHexAlpha(DIDESLC_t c) {
 /// <summary>Gets and returns next character</summary>
 DIDESL::DIDESLC_t DIDESL::Lexer::getCharacter()
 {
-	if (script.eof()) return L'\n';
+	if (script.eof()) return L'\0';
 	else if (currentCharacter == L'\n') {
 		++lines;
 		pos = 1;
+		currentString = L"";
 	}
-	else ++pos;
+	else {
+		currentString += currentCharacter;
+		++pos;
+	}
 	return currentCharacter = script.get();
 }
 

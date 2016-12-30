@@ -12,17 +12,18 @@ class DIDESL::Lexer
 private:
 	std::wistringstream script;
 	DIDESLC_t currentCharacter;
+	DIDESLS_t currentString;
 	unsigned lines;
 	unsigned pos;
 
 	DIDESLS_t getWord();
-	bool isReservedFunctionWord(DIDESLS_t);
-	bool isType(DIDESLS_t);
-	bool isReservedOperatorWord(DIDESLS_t);
-	bool isBoolLiteral(DIDESLS_t);
-	bool isBinAlpha(DIDESLC_t);
-	bool isOctalAlpha(DIDESLC_t);
-	bool isHexAlpha(DIDESLC_t);
+	static bool isReservedFunctionWord(DIDESLS_t);
+	static bool isType(DIDESLS_t);
+	static bool isReservedOperatorWord(DIDESLS_t);
+	static bool isBoolLiteral(DIDESLS_t);
+	static bool isBinAlpha(DIDESLC_t);
+	static bool isOctalAlpha(DIDESLC_t);
+	static bool isHexAlpha(DIDESLC_t);
 	DIDESLC_t getCharacter();
 	DIDESLC_t getCharacterPost();
 
@@ -34,8 +35,9 @@ public:
 	void setFile(DIDESLS_t);
 	void setString(DIDESLS_t);
 	void setStream(std::wistringstream);
+	DIDESLS_t getCurrentString();
 	unsigned getPos();
-	unsigned getLines();
+	unsigned getLine();
 	Token next();
 };
 

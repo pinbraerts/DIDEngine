@@ -57,11 +57,11 @@ struct DIDESL::Token
 		case START:
 			return L"start";
 		case TYPE:
-			return L"type literal";
+			return L"type";
 		case SEMICOLON:
 			return L"semicolon";
 		case NAME:
-			return L"identifier literal";
+			return L"identifier";
 		case STRING_LITERAL:
 			return L"string literal";
 		case NUMBER_LITERAL:
@@ -79,7 +79,7 @@ struct DIDESL::Token
 		case OBRACE: case CBRACE: case OSBRACE: case CSBRACE: case OCBRACE: case CCBRACE:
 			return L"brace";
 		case END:
-			return L"end";
+			return L"EOF";
 		}
 		return L"none";
 	}
