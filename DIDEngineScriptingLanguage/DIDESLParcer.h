@@ -12,7 +12,6 @@ private:
 	DIDESLV_t<Token> currentTokens;
 	Token getToken();
 	Token getTokenPost();
-	bool isEndOfExpression(Token);
 	void parceFunction();
 	void append();
 	void parceAnnotations();

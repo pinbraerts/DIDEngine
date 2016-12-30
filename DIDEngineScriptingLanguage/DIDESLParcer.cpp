@@ -15,10 +15,6 @@ DIDESL::Token DIDESL::Parcer::getTokenPost() {
 	return tem;
 }
 
-bool DIDESL::Parcer::isEndOfExpression(Token tok) {
-	return tok.type == Token::CBRACE || tok.type == Token::CSBRACE || (tok.type == Token::OPERATOR_REFERENCE && tok.value == L",");
-}
-
 #define ANNOTATION_CASE case Token::ANNOTATION: parceAnnotations()
 
 /// <summary>Parses function signature from current token and calls block parce</summary>
@@ -100,13 +96,11 @@ void DIDESL::Parcer::parceArgAfterDots() {
 	}
 }
 
-void DIDESL::Parcer::parceList(Token::Lexem div) {
-	while (currentToken.type != div && currentToken.type != Token::END) {
+void DIDESL::Parcer::parceList(Token::Lexem sep) {
+	while (currentToken.type != sep) {
 		parceExpression(); // and do smth
 		if (currentToken.type == Token::OPERATOR_ENVIRONMENT && currentToken.value == L",") append();
 	}
-	if (currentToken.type == Token::END) throw Error(); // unexpected eof
-	append();
 }
 
 void DIDESL::Parcer::parceExpression() {
@@ -118,28 +112,8 @@ void DIDESL::Parcer::parceExpression() {
 		if (currentToken.type != Token::CBRACE) throw Error(); // unexpected
 		break;
 	case Token::NAME:
-		append();
-		switch(currentToken.type) {
-		case Token::OSBRACE:
-			append();
-			parceExpression(); // get index
-			if (currentToken.type != Token::CSBRACE) throw Error(); // expected ]
-			append(); // do smth with andex operation
-		case Token::TYPE:
-			append();
-			switch (currentToken.type) {
-			case Token::NAME:
-				append(); // it's declaration
-			}
-		case Token::OPERATOR_SET:
-			append();
-			parceExpression(); // parce expression after set
-			break; // and return
-		case Token::OBRACE:
-			parceList(); // parce args and call function
-		}
+
 	}
-	if (!isEndOfExpression(currentToken)) throw Error();
 }
 
 /// <summary>From current token</summary>
