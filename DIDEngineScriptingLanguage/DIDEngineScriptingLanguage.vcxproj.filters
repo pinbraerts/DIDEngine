@@ -71,7 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Syntax.xlsx" />
-    <None Include="TestScript1.dides">
+    <None Include="TestScript.dides">
       <Filter>DIDESL Скрипты</Filter>
     </None>
   </ItemGroup>

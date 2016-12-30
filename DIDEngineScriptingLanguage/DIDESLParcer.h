@@ -12,18 +12,33 @@ private:
 	DIDESLV_t<Token> currentTokens;
 	Token getToken();
 	Token getTokenPost();
-	void parceFunction();
+	bool parceFunction();
 	void append();
 	void parceAnnotations();
 	void parceBlock(); // maybe will be DOMAIN args
-	void parceArgAfterDots(); // maybe will be TYPE args
+	void parceArgsAfterDots(); // maybe will be TYPE args
 	void parceList(Token::Lexem = Token::CBRACE); // maybe arg for separator
-	void parceExpression();
 	void parceOperator();
+	bool parceExpression();
+	bool parceAdd();
+	bool parceMul();
+	bool parceBoolAnd();
+	bool parceBoolOr();
+	bool parceBool();
+	bool parceBitOr();
+	bool parceBitAnd();
+	bool parceUnary();
+	bool parceMember(bool=true);
+	bool parceBasic();
 
 public:
-	struct Error {};
+	struct Error {
+		Error(DIDESLS_t=L"Unexpected");
+		const DIDESLS_t message;
+	};
 	Parcer(DIDESLS_t);
+	Parcer();
+	void setFile(DIDESLS_t);
 	DIDESLV_t<Token> parce();
 
 };

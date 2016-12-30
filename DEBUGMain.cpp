@@ -3,18 +3,16 @@
 #endif // !DEBUGGING
 
 #include "DEBUG.h"
-#include "DIDEngineScriptingLanguage\DIDESLLexer.h"
+#include "DIDEngineScriptingLanguage\DIDESLParcer.h"
 #include <iostream>
 
 int main() {
 	DEBUG_USING(SEPARATOR, L"");
-	DIDESL::Lexer lex;
-	lex.setFile(L"DIDEngineScriptingLanguage\\TestScript1.dides");
-	DIDESL::Token tok = lex.next();
-	while (tok.type != DIDESL::Token::END) {
+	DIDESL::Parcer parcer;
+	parcer.setFile(L"DIDEngineScriptingLanguage\\TestScript.dides");
+	DIDESL::DIDESLV_t<DIDESL::Token> vec = parcer.parce();
+	for (DIDESL::Token tok: vec)
 		DEBUG_LOG(DIDESL::Token::toString(tok.type), L": ", L'"', tok.value, L'"');
-		tok = lex.next();
-	}
 	DEBUG_STOP_USING(SEPARATOR);
 	DEBUG_END_MAIN;
 	return 0;
