@@ -30,12 +30,12 @@ private:
 	bool parceUnary();
 	bool parceMember(bool=true);
 	bool parceBasic();
-	/*
-	void parceDefinitions();
-	void parceNamedExpression();*/
 
 public:
-	struct Error {};
+	struct Error {
+		Error(DIDESLS_t=L"Unexpected");
+		const DIDESLS_t message;
+	};
 	Parcer(DIDESLS_t);
 	Parcer();
 	void setFile(DIDESLS_t);
