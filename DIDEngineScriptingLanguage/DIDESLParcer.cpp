@@ -33,7 +33,7 @@ DIDESL::DIDESLS_t DIDESL::Parcer::errorMessage(DIDESL::Parcer::Error::Code code)
 	CODE_CASE(INDEX_RVALUE, L"rvalue isn't indexable");
 	CODE_CASE(ATTR_RVALUE, L"name of attribute can't be rvalue");
 	CODE_CASE(UNEXPECTED, L"unexpected "; msg += Token::toString(currentToken.type); if (currentToken.type == Token::END) break);
-	CODE_CASE(INVALID_FILE, L"file \""; msg += file; msg += L"\" is invalid"; break);
+	CODE_CASE(INVALID_FILE, L"file \""; msg += file; msg += L"\" is invalid!"; break);
 	entered:
 		pos = lexer->getPos();
 		line = lexer->getCurrentString();
@@ -41,7 +41,7 @@ DIDESL::DIDESLS_t DIDESL::Parcer::errorMessage(DIDESL::Parcer::Error::Code code)
 		msg += std::to_wstring(lexer->getLine());
 		msg += L" line on ";
 		msg += std::to_wstring(pos);
-		msg += L" position:\n";
+		msg += L" position!\n";
 		msg += line + L"\n";
 		for (unsigned i = 0; i < pos - 1; ++i) msg += (line[i] == L'\t' ? L'\t' : L' ');
 		msg += L'^';
@@ -143,7 +143,7 @@ void DIDESL::Parcer::parceBlock() {
 void DIDESL::Parcer::parceList(Token::Lexem sep) {
 	while (currentToken.type != Token::END && currentToken.type != sep) {
 		parceExpression(); // and do smth
-		THROW_NOCMP(COMMA);
+		THROW_NOCMP(COMMA || currentToken.type != sep);
 		append();
 	}
 	if (currentToken.type != sep) PARCER_ERROR(); // unexpected
@@ -244,7 +244,7 @@ void DIDESL::Parcer::parceOperator() {
 			}
 		}
 		else parceExpression();
-		if (currentToken.type != Token::SEMICOLON) throw Error(this); // unexpected
+		THROW_NOCMP(SEMICOLON); // unexpected
 		append();
 		break;
 	}

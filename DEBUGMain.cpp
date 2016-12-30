@@ -3,22 +3,13 @@
 #endif // !DEBUGGING
 
 #include "DEBUG.h"
-#include "DIDEngineScriptingLanguage\DIDESLParcer.h"
+#include "DIDEngineScriptingLanguage\DIDESLParcerTest.h"
 #include <iostream>
 
 int main() {
-	DEBUG_USING(SEPARATOR, L"");
-	try {
-		DIDESL::Parcer parcer;
-		parcer.setFile(L"DIDEngineScriptingLanguage\\TestScript.dides");
-		DIDESL::DIDESLV_t<DIDESL::Token> vec = parcer.parce();
-		for (DIDESL::Token tok : vec)
-			DEBUG_LOG(DIDESL::Token::toString(tok.type), L": ", L'"', tok.value, L'"');
-	}
-	catch (DIDESL::Parcer::Error e) {
-		DEBUG_LOG(e.message);
-	}
-	DEBUG_STOP_USING(SEPARATOR);
+	logTest(L"DIDEngineScriptingLanguage\\TestScript.dides");
+	logTest(L"DIDEngineScriptingLanguage\\TestScpt.dides", L"Error (code: 0): file \"DIDEngineScriptingLanguage\\\\TestScript1.dides\" is invalid");
+	logTest(L"DIDEngineScriptingLanguage\\TestScript1.dides");
 	DEBUG_END_MAIN;
 	return 0;
 }

@@ -66,4 +66,7 @@
   <ItemGroup>
     <Xml Include="DIDEngineConfiguration.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="TestScript1.dides" />
+  </ItemGroup>
 </Project>

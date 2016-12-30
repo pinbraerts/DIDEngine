@@ -121,12 +121,12 @@
     <ClInclude Include="DIDESLLexer.h" />
     <ClInclude Include="DIDESLLine.h" />
     <ClInclude Include="DIDESLParcer.h" />
+    <ClInclude Include="DIDESLParcerTest.h" />
     <ClInclude Include="DIDESLToken.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DIDESLFunction.cpp" />
     <ClCompile Include="DIDESLLexer.cpp" />
-    <ClCompile Include="DIDESLLexerTest.h" />
     <ClCompile Include="DIDESLParcer.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -14,7 +14,7 @@
 #endif // !__STANDART_DEBUG_PREFIX
 
 #ifndef __STANDART_DEBUG_SEPARATOR
-#define __STANDART_DEBUG_SEPARATOR L", "
+#define __STANDART_DEBUG_SEPARATOR L""
 #endif // !__STANDART_DEBUG_SEPARATOR
 
 #ifndef __STANDART_DEBUG_ENDLINE
@@ -102,8 +102,9 @@ template<typename T> void __DEBUG_LOG_SECONDLY(const T& arg) {
 #define __STANDART_DEBUG_SUFFIX
 #endif // !__STANDART_DEBUG_SUFFIX
 
-#define DEBUG_USING(WHICH, VALUE)
-#define DEBUG_STOP_USING(WHICH)
+#define DEBUG_USING(...)
+#define DEBUG_STOP_USING(...)
+#define DEBUG_STOP_USING_ID(...)
 
 #define DEBUG_END_MAIN
 
