@@ -15,22 +15,22 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DIDEngineObject.cpp">
-      <Filter>Файлы исходного кода</Filter>
-    </ClCompile>
-    <ClCompile Include="DIDEngineObjectAction.cpp">
-      <Filter>Файлы исходного кода</Filter>
-    </ClCompile>
-    <ClCompile Include="DIDEngineObjectProperty.cpp">
-      <Filter>Файлы исходного кода</Filter>
-    </ClCompile>
     <ClCompile Include="DEBUGMain.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
-    <ClCompile Include="DIDEnigneEventArgs.cpp">
+    <ClCompile Include="DIDEngine\DIDEngineEventListener.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
-    <ClCompile Include="DIDEngineEventListener.cpp">
+    <ClCompile Include="DIDEngine\DIDEngineObject.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
+    <ClCompile Include="DIDEngine\DIDEngineObjectAction.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
+    <ClCompile Include="DIDEngine\DIDEngineObjectProperty.cpp">
+      <Filter>Файлы исходного кода</Filter>
+    </ClCompile>
+    <ClCompile Include="DIDEngine\DIDEnigneEventArgs.cpp">
       <Filter>Файлы исходного кода</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,28 +38,28 @@
     <ClInclude Include="DEBUG.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="DIDEngineDefinitions.h">
+    <ClInclude Include="DIDEngine\DIDEngine.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="DIDEngineObject.h">
+    <ClInclude Include="DIDEngine\DIDEngineDefinitions.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="DIDEngineObjectAction.h">
+    <ClInclude Include="DIDEngine\DIDEngineEvent.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="DIDEngine.h">
+    <ClInclude Include="DIDEngine\DIDEngineEventListener.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="DIDEngineObjectProperty.h">
+    <ClInclude Include="DIDEngine\DIDEngineObject.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="DIDEngineEvent.h">
+    <ClInclude Include="DIDEngine\DIDEngineObjectAction.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="DIDEnigneEventArgs.h">
+    <ClInclude Include="DIDEngine\DIDEngineObjectProperty.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
-    <ClInclude Include="DIDEngineEventListener.h">
+    <ClInclude Include="DIDEngine\DIDEnigneEventArgs.h">
       <Filter>Заголовочные файлы</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,8 +5,8 @@
 #define DEBUGGING
 #endif // !DEBUGGING
 
-#include "DEBUG.h"
-#include "DIDEngineXML/DIDEngineEnvironment.h"
+#include "../DEBUG.h"
+#include "../DIDEngineXML/DIDEngineEnvironment.h"
 
 namespace DIDEngine {
 	typedef signed char DIDEOPV_t;

@@ -113,22 +113,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DEBUGMain.cpp" />
-    <ClCompile Include="DIDEngineObject.cpp" />
-    <ClCompile Include="DIDEngineObjectAction.cpp" />
-    <ClCompile Include="DIDEngineObjectProperty.cpp" />
-    <ClCompile Include="DIDEnigneEventArgs.cpp" />
-    <ClCompile Include="DIDEngineEventListener.cpp" />
+    <ClCompile Include="DIDEngine\DIDEngineEventListener.cpp" />
+    <ClCompile Include="DIDEngine\DIDEngineObject.cpp" />
+    <ClCompile Include="DIDEngine\DIDEngineObjectAction.cpp" />
+    <ClCompile Include="DIDEngine\DIDEngineObjectProperty.cpp" />
+    <ClCompile Include="DIDEngine\DIDEnigneEventArgs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DEBUG.h" />
-    <ClInclude Include="DIDEngine.h" />
-    <ClInclude Include="DIDEngineDefinitions.h" />
-    <ClInclude Include="DIDEngineEvent.h" />
-    <ClInclude Include="DIDEngineObject.h" />
-    <ClInclude Include="DIDEngineObjectAction.h" />
-    <ClInclude Include="DIDEngineObjectProperty.h" />
-    <ClInclude Include="DIDEnigneEventArgs.h" />
-    <ClInclude Include="DIDEngineEventListener.h" />
+    <ClInclude Include="DIDEngine\DIDEngine.h" />
+    <ClInclude Include="DIDEngine\DIDEngineDefinitions.h" />
+    <ClInclude Include="DIDEngine\DIDEngineEvent.h" />
+    <ClInclude Include="DIDEngine\DIDEngineEventListener.h" />
+    <ClInclude Include="DIDEngine\DIDEngineObject.h" />
+    <ClInclude Include="DIDEngine\DIDEngineObjectAction.h" />
+    <ClInclude Include="DIDEngine\DIDEngineObjectProperty.h" />
+    <ClInclude Include="DIDEngine\DIDEnigneEventArgs.h" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="DIDEngineConfiguration.xml">
