@@ -8,9 +8,9 @@ async function onGameStart(Object sender, ...args) {
 	Event mPlayerKick = mEnemy.getEvent("Kick");
 	while(true) {
 		if(input("Kick enemy? (y/n) ") == "y") {
-			mPlayerKick.call(mPlayer, mEnemy.getId());
+			mPlayerKick(mPlayer, mEnemy.getId());
 		}
-		mEnemyKick.call(mEnemy, mPlayer.getId());
+		mEnemyKick(mEnemy, mPlayer.getId());
 	}
 }
 
