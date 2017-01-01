@@ -6,7 +6,7 @@ DIDESL::Token DIDESL::Parcer::getToken()
 	try {
 		return currentToken = lexer->next();
 	} catch (Lexer::EOFError) {
-		PARCER_ERROR(Error::INVALID_FILE);
+		PARCER_ERROR();
 	}
 }
 
@@ -34,6 +34,7 @@ DIDESL::DIDESLS_t DIDESL::Parcer::errorMessage(DIDESL::Parcer::Error::Code code)
 	CODE_CASE(ATTR_RVALUE, L"name of attribute can't be rvalue");
 	CODE_CASE(UNEXPECTED, L"unexpected "; msg += Token::toString(currentToken.type); if (currentToken.type == Token::END) break);
 	CODE_CASE(INVALID_FILE, L"file \""; msg += file; msg += L"\" is invalid!"; break);
+	CODE_CASE(RVALUE_DECLARATION, L"rvalue after type ");
 	entered:
 		pos = lexer->getPos();
 		line = lexer->getCurrentString();
@@ -129,7 +130,10 @@ void DIDESL::Parcer::append() {
 void DIDESL::Parcer::parceAnnotations() {
 	while (currentToken.type == Token::ANNOTATION) {
 		append();
-		if (getToken().type == Token::OBRACE) parceList();
+		TYPE_CMP(OBRACE) {
+			append();
+			parceList();
+		}
 		// and do smth with annotation
 	}
 }
@@ -143,8 +147,12 @@ void DIDESL::Parcer::parceBlock() {
 void DIDESL::Parcer::parceList(Token::Lexem sep) {
 	while (currentToken.type != Token::END && currentToken.type != sep) {
 		parceExpression(); // and do smth
-		THROW_NOCMP(COMMA || currentToken.type != sep);
-		append();
+		TYPE_CMP(COMMA) {
+			append();
+			continue;
+		}
+		else TYPE_CMP(END || currentToken.type == sep) break;
+		PARCER_ERROR();
 	}
 	if (currentToken.type != sep) PARCER_ERROR(); // unexpected
 	append();
@@ -168,7 +176,7 @@ void DIDESL::Parcer::parceOperator() {
 		}
 		else if (currentToken.value == L"break") {
 			// maybe will be cycle identifier
-			getToken();
+			append();
 			parceAnnotations();
 			THROW_NOCMP(SEMICOLON); // unexpected
 			append();
@@ -217,8 +225,8 @@ void DIDESL::Parcer::parceOperator() {
 						append();
 						continue;
 					}
-					TYPE_CMP(SEMICOLON) break;
-					throw Error(this); // unexpected
+					THROW_NOCMP(SEMICOLON); // unexpected
+					break;
 				}
 			}
 		}
@@ -238,9 +246,10 @@ void DIDESL::Parcer::parceOperator() {
 						append();
 						continue;
 					}
-					TYPE_CMP(SEMICOLON) break;
-					throw Error(this); // unexpected
+					THROW_NOCMP(SEMICOLON); // unexpected
+					break;
 				}
+				else PARCER_ERROR(Error::RVALUE_DECLARATION); // rvalue after type
 			}
 		}
 		else parceExpression();
@@ -291,6 +300,12 @@ bool DIDESL::Parcer::parceUnary() {
 		if (currentToken.value == L"!") append();
 		res = false;
 		break;
+	case Token::TYPE:
+		append();
+		res = false;
+		THROW_NOCMP(COLON);
+		append();
+		break;
 	case Token::OPERATOR_REFERENCE:
 		append();
 	default:
@@ -301,7 +316,7 @@ bool DIDESL::Parcer::parceUnary() {
 }
 
 bool DIDESL::Parcer::parceMember(bool first) {
-	bool res = first ? parceBasic() : true;
+	bool res = first ? parcePrimary() : true;
 	switch (currentToken.type) {
 	case Token::OBRACE:
 		if (!res) PARCER_ERROR(Error::CALL_RVALUE); // can't call rvalue
@@ -323,12 +338,15 @@ bool DIDESL::Parcer::parceMember(bool first) {
 	return res;
 }
 
-bool DIDESL::Parcer::parceBasic() {
+bool DIDESL::Parcer::parcePrimary() {
+	bool res;
 	switch (currentToken.type) {
 	case Token::OBRACE:
 		append();
-		parceList();
-		return false;
+		res = parceExpression();
+		THROW_NOCMP(CBRACE);
+		append();
+		return res;
 	case Token::BOOL_LITERAL: case Token::NUMBER_LITERAL:
 	case Token::NUMBER_LITERAL_BINARY: case Token::NUMBER_LITERAL_OCTAL:
 	case Token::NUMBER_LITERAL_MHEX: case Token::STRING_LITERAL:
@@ -349,11 +367,11 @@ bool DIDESL::Parcer::parceBasic() {
 || parceBoolOr
 && parceBoolAnd
 == != parceBool
-| parceBitOr	
+| parceBitOr
 & parceBitAnd
-$ ~ ! unary + - parceUnary
+type: $ ~ ! unary + - parceUnary
 f() . [] parceMember
-(...) name "" 1 true parceBasic
+(...) name "" 1 true parcePrimary
 */
 
 DIDESL::Parcer::Parcer(DIDESLS_t Script, DIDESLS_t File) : lexer(new Lexer(Script)), currentTokens(), file(File) {
@@ -369,7 +387,13 @@ void DIDESL::Parcer::setString(DIDESLS_t String, DIDESLS_t File) {
 }
 
 void DIDESL::Parcer::setFile(DIDESLS_t path) {
-	lexer->setFile(path);
+	try {
+		lexer->setFile(path);
+	}
+	catch (Lexer::EOFError) {
+		file = path;
+		PARCER_ERROR(Error::INVALID_FILE);
+	}
 	file = path;
 	getToken();
 }

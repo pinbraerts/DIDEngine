@@ -1,3 +1,5 @@
+@ErrIfNull(true)
+
 async function onGameStart(Object sender, ...args) {
 	Resources res = getResources();
 	Object mPlayer = sender.getChild(res.objects.player);
@@ -5,19 +7,19 @@ async function onGameStart(Object sender, ...args) {
 	Object mEnemy = sender.getChild(res.objects.enemy);
 	Event mPlayerKick = mEnemy.getEvent("Kick");
 	while(true) {
-		if(input("Kick enemy ? (y/n) ") == "y") {
+		if(input("Kick enemy? (y/n) ") == "y") {
 			mPlayerKick.call(mPlayer, mEnemy.getId());
 		}
 		mEnemyKick.call(mEnemy, mPlayer.getId());
 	}
 }
 
-async function onDead(Object sender, ...args) {
+async function onDead(Object sender, @ArgId(0) ...args) {
 	log(sender.name + " win, " + getGameObject().getObject(args.popId()).name + " lose!");
-	getGameObject().getEvent(res.events.exit).call(sender);
+	getGameObject().getEvent(res.events.exit)(sender);
 }
 
-async function onKick(Object sender, ...args) {
+async function onKick(Object sender, @ArgId(0) ...args) {
 	Resources res = getResources();
 	Object target = getGameObject().getObject(args.popId());
 	int value = res.getInteger(res.integers.strength_koeff) * sender.getProperty("Strength");

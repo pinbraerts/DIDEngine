@@ -9,6 +9,7 @@ struct DIDESL::Token
 	enum Lexem {
 		START,
 		TYPE,
+		COLON,
 		SEMICOLON,
 		COMMA,
 		DOT,
@@ -58,6 +59,8 @@ struct DIDESL::Token
 			return L"start";
 		case TYPE:
 			return L"type";
+		case COLON:
+			return L"colon";
 		case SEMICOLON:
 			return L"semicolon";
 		case NAME:
@@ -78,6 +81,8 @@ struct DIDESL::Token
 			return L"operator";
 		case OBRACE: case CBRACE: case OSBRACE: case CSBRACE: case OCBRACE: case CCBRACE:
 			return L"brace";
+		case ANNOTATION:
+			return L"annotation";
 		case END:
 			return L"EOF";
 		}

@@ -95,7 +95,7 @@ bool DIDESL::Lexer::isHexAlpha(DIDESLC_t c) {
 /// <summary>Gets and returns next character</summary>
 DIDESL::DIDESLC_t DIDESL::Lexer::getCharacter()
 {
-	if (script.eof()) return L'\0';
+	if (script.eof()) return L' ';
 	else if (currentCharacter == L'\n') {
 		++lines;
 		pos = 1;
@@ -123,8 +123,8 @@ case X:\
 	else return Token(Token::IFX, X)
 #define NUMBER_LITERAL_CASE(X, TYPE, FUNC)\
 			X\
-				while (!script.eof() && FUNC (getCharacter()))\
-					str += currentCharacter;\
+				while (!script.eof() && FUNC (currentCharacter))\
+					str += getCharacterPost();\
 				if (str.empty()) throw EOFError();\
 				return Token(Token:: NUMBER_LITERAL##TYPE, str)
 
@@ -142,6 +142,7 @@ DIDESL::Token DIDESL::Lexer::next() {
 	SIMPLE_CASE(L'^', OPERATOR_BIT);
 	SIMPLE_CASE(L'~', OPERATOR_BIT);
 	SIMPLE_CASE(L';', SEMICOLON);
+	SIMPLE_CASE(L':', COLON);
 	SIMPLE_CASE(L',', COMMA);
 	IF_TWO_CASE(L'!', L'=', OPERATOR_BOOL, OPERATOR_BOOL);
 	IF_TWO_CASE(L'>', L'=', OPERATOR_BOOL, OPERATOR_BOOL);

@@ -74,5 +74,8 @@
     <None Include="TestScript.dides">
       <Filter>DIDESL Скрипты</Filter>
     </None>
+    <None Include="TestScript1.dides">
+      <Filter>DIDESL Скрипты</Filter>
+    </None>
   </ItemGroup>
 </Project>

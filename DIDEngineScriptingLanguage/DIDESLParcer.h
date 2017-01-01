@@ -9,6 +9,7 @@ class DIDESL::Parcer {
 public:
 	struct Error {
 		enum Code {
+			RVALUE_DECLARATION,
 			INVALID_FILE,
 			ATTR_RVALUE,
 			INDEX_RVALUE,
@@ -58,7 +59,7 @@ private:
 	bool parceBitAnd();
 	bool parceUnary();
 	bool parceMember(bool = true);
-	bool parceBasic();
+	bool parcePrimary();
 
 };
 
