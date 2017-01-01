@@ -133,6 +133,7 @@
     <None Include="Syntax.xlsx" />
     <None Include="TestScript.dides" />
     <None Include="TestScript1.dides" />
+    <None Include="TestScript2.dides" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

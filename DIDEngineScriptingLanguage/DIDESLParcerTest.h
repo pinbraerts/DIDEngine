@@ -32,7 +32,10 @@ bool testFile(DIDESL::DIDESLS_t file, DIDESL::DIDESLS_t msg = L"") {
 void logTest(DIDESL::DIDESLS_t file, DIDESL::DIDESLS_t msg=L"") {
 	DEBUG_USING(PREFIX, (DIDESL::DIDESLS_t)L"TEST no." + std::to_wstring(__tests) + L": ", SEPARATOR, L"");
 	DEBUG_LOG(testFile(file, msg) ? L"passed" : L"failed", L"!\n");
-	DEBUG_STOP_USING(PREFIX, SEPARATOR);
+	DEBUG_WAIT(L"Press Enter to finish test... ");
+	__DEBUG_PREFIX = L"";
+	DEBUG_LOG();
+	DEBUG_STOP_USING(SEPARATOR, PREFIX);
 }
 
 #endif // !DID_ENGINE_SCRIPTING_LANGUAGE_PARSER_TEST_H

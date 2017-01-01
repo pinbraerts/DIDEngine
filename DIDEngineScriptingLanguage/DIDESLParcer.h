@@ -9,6 +9,8 @@ class DIDESL::Parcer {
 public:
 	struct Error {
 		enum Code {
+			EXPECTED_DEFINITION,
+			ANONIMUOS_FUNCTION,
 			RVALUE_DECLARATION,
 			INVALID_FILE,
 			ATTR_RVALUE,
@@ -42,7 +44,7 @@ private:
 	Token getTokenPost();
 
 	DIDESLS_t errorMessage(Error::Code) const;
-	bool parceFunction();
+	bool parceFunction(bool=true);
 	void append();
 	void parceAnnotations();
 	void parceBlock(); // maybe will be DOMAIN args

@@ -34,10 +34,14 @@ DIDESL::DIDESLS_t DIDESL::Parcer::errorMessage(DIDESL::Parcer::Error::Code code)
 	CODE_CASE(ATTR_RVALUE, L"name of attribute can't be rvalue");
 	CODE_CASE(UNEXPECTED, L"unexpected "; msg += Token::toString(currentToken.type); if (currentToken.type == Token::END) break);
 	CODE_CASE(INVALID_FILE, L"file \""; msg += file; msg += L"\" is invalid!"; break);
-	CODE_CASE(RVALUE_DECLARATION, L"rvalue after type ");
+	CODE_CASE(ANONIMUOS_FUNCTION, L"expected named function");
+	CODE_CASE(RVALUE_DECLARATION, L"rvalue after type");
+	CODE_CASE(EXPECTED_DEFINITION, L"in expression must be used Function Declaration");
 	entered:
 		pos = lexer->getPos();
 		line = lexer->getCurrentString();
+		msg += L" in ";
+		msg += file;
 		msg += L" in ";
 		msg += std::to_wstring(lexer->getLine());
 		msg += L" line on ";
@@ -65,7 +69,7 @@ else TYPE_CMP(TYPE) {\
 }
 
 /// <summary>Parses function signature from current token and calls block parce</summary>
-bool DIDESL::Parcer::parceFunction() {
+bool DIDESL::Parcer::parceFunction(bool isname) {
 	bool isf = false;
 	while (currentToken.type == Token::RES_FUNCTION) {
 		if (!isf) isf = currentToken.value == L"function";
@@ -80,10 +84,15 @@ bool DIDESL::Parcer::parceFunction() {
 		append(); // it's name (unnessesary)
 		parceAnnotations();
 	}
+	else if (isname) PARCER_ERROR(Error::ANONIMUOS_FUNCTION);
 	TYPE_CMP(OBRACE) {
 		append();
 		while (true) {
 			parceAnnotations();
+			TYPE_CMP(CBRACE) {
+				append();
+				break;
+			}
 			TOKEN_TYPE_CMP // type
 			else TYPE_CMP(DOTS) {
 				append();
@@ -106,9 +115,7 @@ bool DIDESL::Parcer::parceFunction() {
 				append();
 				continue;
 			}
-			THROW_NOCMP(CBRACE); // unexpected
-			append();
-			break;
+			PARCER_ERROR(); // unexpected
 		}
 		parceAnnotations();
 	}
@@ -117,7 +124,7 @@ bool DIDESL::Parcer::parceFunction() {
 		parceBlock(); // and some args about functions
 		THROW_NOCMP(CCBRACE); // unexpected
 		append();
-		return true;
+		return true; // it's function declaration and definition
 	}
 	return false; // it's function declaration
 }
@@ -308,10 +315,17 @@ bool DIDESL::Parcer::parceUnary() {
 		break;
 	case Token::OPERATOR_REFERENCE:
 		append();
+		TYPE_CMP(OPERATOR_REFERENCE) {
+			append();
+			res = false;
+			THROW_NOCMP(COLON);
+			append();
+			break;
+		}
 	default:
 		res = true;
 	}
-	res = res && parceMember();
+	res = parceMember() && res;
 	return res;
 }
 
@@ -355,6 +369,9 @@ bool DIDESL::Parcer::parcePrimary() {
 	case Token::NAME:
 		append();
 		return true;
+	case Token::RES_FUNCTION:
+		if(!parceFunction(false)) PARCER_ERROR(Error::EXPECTED_DEFINITION);
+		return true;
 	default:
 		return false;
 	}
@@ -371,7 +388,7 @@ bool DIDESL::Parcer::parcePrimary() {
 & parceBitAnd
 type: $ ~ ! unary + - parceUnary
 f() . [] parceMember
-(...) name "" 1 true parcePrimary
+(...) name "" 1 true function declaration () {} parcePrimary
 */
 
 DIDESL::Parcer::Parcer(DIDESLS_t Script, DIDESLS_t File) : lexer(new Lexer(Script)), currentTokens(), file(File) {
@@ -388,13 +405,12 @@ void DIDESL::Parcer::setString(DIDESLS_t String, DIDESLS_t File) {
 
 void DIDESL::Parcer::setFile(DIDESLS_t path) {
 	try {
+		file = path;
 		lexer->setFile(path);
 	}
 	catch (Lexer::EOFError) {
-		file = path;
 		PARCER_ERROR(Error::INVALID_FILE);
 	}
-	file = path;
 	getToken();
 }
 
@@ -408,7 +424,8 @@ DIDESL::DIDESLV_t<DIDESL::Token> DIDESL::Parcer::parce() {
 		parceFunction();
 		parce();
 	}
-	TYPE_CMP(END && (currentTokens.empty() || currentTokens.back().type != Token::END)) append();
+	TYPE_CMP(END) if (currentTokens.empty() || currentTokens.back().type != Token::END) append(); else;
+	else parceBlock();
 	return currentTokens;
 }
 

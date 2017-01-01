@@ -1,0 +1,5 @@
+function f() {
+	Listener a = Listener: function () { log("Ok", false); } + Listener: function () { log("!"); };
+}
+
+int i = 0;

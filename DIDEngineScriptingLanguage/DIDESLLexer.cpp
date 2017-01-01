@@ -68,7 +68,7 @@ bool DIDESL::Lexer::isType(DIDESLS_t str) {
 	return str == L"Integer" || str == L"int" || str == L"String" ||
 		str == L"string" || str == L"Listener" || str == L"Object" ||
 		str == L"Event" || str == L"Bool" || str == L"bool" ||
-		str == L"Resources"; // TODO: add types
+		str == L"Resources" || str == L"Function"; // TODO: add types
 }
 
 bool DIDESL::Lexer::isReservedOperatorWord(DIDESLS_t str) {
@@ -131,7 +131,7 @@ case X:\
 /// <summary>Returns next token</summary>
 DIDESL::Token DIDESL::Lexer::next() {
 	while (!script.eof() && isspace(currentCharacter)) getCharacter();
-	if (script.eof()) return Token(Token::END, L'\n');
+	if (script.eof()) return Token(Token::END, L"");
 	switch (currentCharacter) {
 	SIMPLE_CASE(L'(', OBRACE);
 	SIMPLE_CASE(L')', CBRACE);

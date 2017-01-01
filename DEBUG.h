@@ -57,7 +57,8 @@
 #define __DEBUG_STOP_USING_ID_5(ID, WHICH1, WHICH2, WHICH3, WHICH4) __DEBUG_STOP_USING_ID_4(ID, WHICH1, WHICH2, WHICH3); __DEBUG_STOP_USING_ID_2(ID, WHICH4)
 #define DEBUG_STOP_USING_ID(...) __MACRO_SELECTOR(__DEBUG_STOP_USING_ID, __VA_ARGS__)(__VA_ARGS__)
 
-#define DEBUG_END_MAIN do { std::wcout << L"Press Enter to quit... "; std::getchar(); } while(false)
+#define DEBUG_WAIT(MSG) do { std::wcout << MSG; std::getchar(); } while(false)
+#define DEBUG_END_MAIN DEBUG_WAIT(L"Press Enter to quit... ")
 
 static std::wstring __DEBUG_SUFFIX = __STANDART_DEBUG_SUFFIX;
 static std::wstring __DEBUG_PREFIX = __STANDART_DEBUG_PREFIX;
@@ -69,7 +70,7 @@ template<typename T, typename ...RT> void __DEBUG_LOG(const T& arg, const RT& ..
 	__DEBUG_LOG_SECONDLY(args...);
 }
 
-template<typename T = const DIDESLC_t*> void __DEBUG_LOG(const T& arg = "") {
+template<typename T = const std::wstring> void __DEBUG_LOG(const T& arg = L"") {
 	std::wcout << __DEBUG_PREFIX << arg << __DEBUG_SUFFIX << __DEBUG_ENDLINE;
 }
 
