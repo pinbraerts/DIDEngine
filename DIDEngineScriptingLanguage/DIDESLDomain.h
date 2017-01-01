@@ -1,10 +1,9 @@
 #ifndef DID_ENGINE_SCRIPTING_LANGUAGE_DOMAIN_H
 #define DID_ENGINE_SCRIPTING_LANGUAGE_DOMAIN_H
-
 #include "DIDESLDefinitions.h"
 
 class DIDESL::Domain {
-	
+private:
 };
 
 #endif // !DID_ENGINE_SCRIPTING_LANGUAGE_DOMAIN_H

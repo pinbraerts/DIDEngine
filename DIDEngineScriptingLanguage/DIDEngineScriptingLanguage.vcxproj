@@ -117,16 +117,19 @@
     <ClInclude Include="DIDESLArgument.h" />
     <ClInclude Include="DIDESLDefinitions.h" />
     <ClInclude Include="DIDESLDomain.h" />
+    <ClInclude Include="DIDESLModule.h" />
     <ClInclude Include="DIDESLFunction.h" />
     <ClInclude Include="DIDESLLexer.h" />
     <ClInclude Include="DIDESLLine.h" />
     <ClInclude Include="DIDESLParcer.h" />
     <ClInclude Include="DIDESLParcerTest.h" />
+    <ClInclude Include="DIDESLRoot.h" />
     <ClInclude Include="DIDESLToken.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DIDESLFunction.cpp" />
     <ClCompile Include="DIDESLLexer.cpp" />
+    <ClCompile Include="DIDESLModule.cpp" />
     <ClCompile Include="DIDESLParcer.cpp" />
   </ItemGroup>
   <ItemGroup>

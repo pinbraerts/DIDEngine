@@ -7,7 +7,7 @@
 
 class DIDESL::Function {
 private:
-	Domain* parent;
+	Module* parent;
 	std::vector<Line*> lines;
 	DIDESLBM_t words;
 	std::vector<Argument> args;
@@ -19,7 +19,7 @@ public:
 		GLOBAL = 2
 	};
 
-	Function(DIDESLS_t = L"", std::vector<Line*> = std::vector<Line*>(), std::vector<Argument> = std::vector<Argument>(), DIDESLBM_t = 0, Domain* = nullptr);
+	Function(DIDESLS_t = L"", std::vector<Line*> = std::vector<Line*>(), std::vector<Argument> = std::vector<Argument>(), DIDESLBM_t = 0, Module* = nullptr);
 	DIDESLA_t call(std::vector<Argument>);
 };
 
